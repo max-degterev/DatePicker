@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="reset.css">
+<link rel="stylesheet" type="text/css" href="datepicker.css">
+<body>
+    <div class="datepicker" id="datepicker">
+        <div class="dp-months-holder"><!-- JS generated months list --></div>
+        <div class="dp-cal-holder"><!-- JS generated calendar --></div>
+    </div>
+
+    <script src="jquery.js"></script>
+    <script src="calendar.js"></script>
+    <script src="datepicker.js"></script>
+    <script>
+        var datepicker = new DatePicker('#datepicker');
+        datepicker.init();
+    </script>
+</body>
