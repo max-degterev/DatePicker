@@ -42,7 +42,9 @@ DatePicker.prototype.init = function() {
     this.generateCalendar();
     console.log('calendar: ' + ((+(new Date()) - this.profiler.start)));
     
-    this.els.cells = this.els.calHolder.find('.calendar-day');
+    this.els.cells = this.els.calendar.children('.calendar-day');
+    
+    this.resetHolder();
 
     this.logic();
 };
@@ -60,7 +62,7 @@ DatePicker.prototype.generateLabels = function() {
     this.els.monthsHolder.append(monthLabels);
 };
 DatePicker.prototype.generateCalendar = function() {
-    this.calendar = $(Calendar.generate({
+    this.els.calendar = $(Calendar.generate({
         start: {
             year: this.start.getFullYear(),
             month: this.start.getMonth() + 1,
@@ -75,7 +77,12 @@ DatePicker.prototype.generateCalendar = function() {
         type: 'list'
     }));
  
-    this.els.calHolder.append(this.calendar);
+    this.els.calHolder.append(this.els.calendar);
+};
+DatePicker.prototype.resetHolder = function() {
+    var cellW = this.els.cells.not('.monthlabel').eq(0).outerWidth();
+
+    this.els.calendar.css({ width: (cellW * this.els.cells.length) + (this.options.months * 2) });
 };
 
 DatePicker.prototype.logic = function() {
