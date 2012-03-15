@@ -21,61 +21,83 @@
             text-transform: uppercase;
             text-align: center;
         }
-    .datepicker .dp-cal-holder {
-        overflow: hidden;
-        padding: 2px 0;
-        background: #dde0e2;
-        border-top: 1px solid #c6c9cb;
+    
+    .datepicker .dp-cal-wrap {
+        position: relative;
     }
-        .datepicker .calendar-list {
-            width: 90000px;
+        .datepicker .dp-cal-wrap .dp-cal-arrival-handle,
+        .datepicker .dp-cal-wrap .dp-cal-departure-handle {
+            width: 24px;
+            height: 71px;
+
+            margin-top: -2px;
+
+            display: none;
+
+            position: absolute;
+            left: 0;
+            top: 0;
+            
+            background: blue;
+            cursor: col-resize;
         }
-            .datepicker .calendar-day {
-                width: 20px;
-                height: 52px;
-            
-                padding: 5px 7px;
-
-                display: inline-block;
-                vertical-align: top;
+        .datepicker .dp-cal-wrap .dp-cal-arrival-handle.active,
+        .datepicker .dp-cal-wrap .dp-cal-departure-handle.active {
+            display: block;
+        }
+        .datepicker .dp-cal-holder {
+            overflow: hidden;
+            padding: 2px 0;
+            background: #dde0e2;
+            border-top: 1px solid #c6c9cb;
+        }
+            .datepicker .calendar-list {
+                width: 90000px;
             }
-            .datepicker .calendar-day.monthlabel {
-                position: relative;
-            	border-left: 2px solid #a0a2a3;
-            }
-            .datepicker .calendar-day.monthlabel.past {
-                border-left: none;
-            }
-                .datepicker .calendar-day > span {
-                    display: block;
-                    font-size: 14px;
-                    line-height: 14px;
-                    color: #535353;
-                }
-                .datepicker .calendar-day > span > em {
-                    margin-top: 3px;
-                    display: block;
-                    font-size: 11px;
-                    line-height: 11px;
-                    color: #989898;
-                }
-                .datepicker .calendar-day.weekend > span > em {
-                    color: #da8585;
-                }
-                .datepicker .calendar-day > strong {
-                    margin: 5px 7px;
-
-                    display: block;
-                    position: absolute;
-                    left: 0;
-                    bottom: 0;
-
-                    font-size: 11px;
-                    line-height: 11px;
-                    color: #a0a0a0;
-                }
-                .datepicker .calendar-day.selected {
-                    background: #fff;
-                }
+                .datepicker .calendar-day {
+                    width: 20px;
+                    height: 52px;
             
-            
+                    padding: 5px 7px;
+
+                    display: inline-block;
+                    vertical-align: top;
+                }
+                .datepicker .calendar-day.monthlabel {
+                    position: relative;
+                	border-left: 2px solid #a0a2a3;
+                }
+                .datepicker .calendar-day.monthlabel.past {
+                    border-left: none;
+                }
+                    .datepicker .calendar-day > span {
+                        display: block;
+                        font-size: 14px;
+                        line-height: 14px;
+                        color: #535353;
+                    }
+                    .datepicker .calendar-day > span > em {
+                        margin-top: 3px;
+                        display: block;
+                        font-size: 11px;
+                        line-height: 11px;
+                        color: #989898;
+                    }
+                    .datepicker .calendar-day.weekend > span > em {
+                        color: #da8585;
+                    }
+                    .datepicker .calendar-day > strong {
+                        margin: 5px 7px;
+
+                        display: block;
+                        position: absolute;
+                        left: 0;
+                        bottom: 0;
+
+                        font-size: 11px;
+                        line-height: 11px;
+                        color: #a0a0a0;
+                    }
+                    .datepicker .calendar-day.selected {
+                        background: #fff;
+                    }

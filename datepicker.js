@@ -8,7 +8,9 @@ var DatePicker = function(container, options) {
     this.options = $.extend({
         selectors: {
             monthsHolder: '.dp-months-holder',
-            calHolder: '.dp-cal-holder'
+            calHolder: '.dp-cal-holder',
+            arrivalHandle: '.dp-cal-arrival-handle',
+            departureHandle: '.dp-cal-departure-handle'
         },
         months: 16
     }, options);
@@ -26,8 +28,9 @@ DatePicker.prototype.init = function() {
     this.state = {};
     this.els = {};
     
-    this.els.monthsHolder = this.container.find(this.options.selectors.monthsHolder);
-    this.els.calHolder = this.container.find(this.options.selectors.calHolder);
+    for (var prop in this.options.selectors) {
+        this.els[prop] = this.container.find(this.options.selectors[prop]);
+    }
 
     this.now = new Date();
     this.today = new Date(this.now.getFullYear(), this.now.getMonth(), this.now.getDate());
@@ -86,14 +89,42 @@ DatePicker.prototype.resetHolder = function() {
 };
 
 DatePicker.prototype.logic = function() {
-    this.state.checkin = '2012-03-28';
-    this.state.checkout = '2012-04-02';
-    this.selectCurrentDates();
+    this.els.calendar.on('click', '.calendar-day', $.proxy(this.handleCellsClick, this));
+};
+DatePicker.prototype.handleCellsClick = function(e) {
+    var el = $(e.currentTarget),
+        date = el.data('date');
+
+    if (!this.state.checkin && !this.state.checkout) {
+        // First click
+        this.state.checkin = date;
+        this.els.arrivalHandle.addClass('active').css({ left: el.position().left });
+        this.els.arrivalHandle.html(el.html());
+    }
+    else if (this.state.checkin && ! this.state.checkout) {
+        // Second click
+        this.state.checkout = date;
+
+        this.checkDatesState();
+        this.selectCurrentDates();
+    }
+    else {
+        // n-th click
+    }
 };
 DatePicker.prototype.selectCurrentDates = function() {
     this.els.cells.filter('[data-date="' + this.state.checkin + '"]').addClass('checkin');
     this.els.cells.filter('[data-date="' + this.state.checkout + '"]').addClass('checkout');
     this.selectRange(this.state.checkin, this.state.checkout, 'selected');
+};
+DatePicker.prototype.checkDatesState = function() {
+    var date1_str = this.state.checkin,
+        date2_str = this.state.checkout;
+        
+    if (date1_str > date2_str) {
+        this.state.checkin = date2_str;
+        this.state.checkout = date1_str;
+    }
 };
 DatePicker.prototype.selectRange = function(ymd1, ymd2, selection_class) {
     var d1_arr = ymd1.split('-'),
