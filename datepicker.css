@@ -46,13 +46,19 @@
             display: block;
         }
         .datepicker .dp-cal-holder {
+            height: 63px;
             overflow: hidden;
-            padding: 2px 0;
-            background: #dde0e2;
-            border-top: 1px solid #c6c9cb;
+            position: relative;
         }
             .datepicker .calendar-list {
                 width: 90000px;
+                
+                position: absolute;
+                left: 0;
+                top: 0;
+                
+                margin-left: -1px;
+                border-top: 1px solid #dcdfe2;
             }
                 .datepicker .calendar-day {
                     width: 20px;
@@ -62,32 +68,40 @@
 
                     display: inline-block;
                     vertical-align: top;
+                    
+                    border-left: 1px solid #dcdfe2;
+                    
+                    background: #fff;
+                    
+                    text-align: center;
                 }
                 .datepicker .calendar-day.monthlabel {
                     position: relative;
-                	border-left: 2px solid #a0a2a3;
-                }
-                .datepicker .calendar-day.monthlabel.past {
-                    border-left: none;
+                    border-left: 1px solid #bbb;
                 }
                     .datepicker .calendar-day > span {
                         display: block;
+                        font-weight: bold;
                         font-size: 14px;
                         line-height: 14px;
-                        color: #535353;
+                        color: #4c4c4c;
                     }
                     .datepicker .calendar-day > span > em {
                         margin-top: 3px;
                         display: block;
+                        font-weight: normal;
                         font-size: 11px;
                         line-height: 11px;
-                        color: #989898;
+                        color: #b7b7b7;
+                    }
+                    .datepicker .calendar-day.weekend > span {
+                        color: #c24c4c;
                     }
                     .datepicker .calendar-day.weekend > span > em {
-                        color: #da8585;
+                        color: #f0b8ba;
                     }
                     .datepicker .calendar-day > strong {
-                        margin: 5px 7px;
+                        padding: 5px 7px;
 
                         display: block;
                         position: absolute;
@@ -96,8 +110,7 @@
 
                         font-size: 11px;
                         line-height: 11px;
-                        color: #a0a0a0;
-                    }
-                    .datepicker .calendar-day.selected {
+                        color: #b7b7b7;
+                        
                         background: #fff;
                     }

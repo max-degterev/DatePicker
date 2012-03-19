@@ -83,9 +83,9 @@ DatePicker.prototype.generateCalendar = function() {
     this.els.calHolder.append(this.els.calendar);
 };
 DatePicker.prototype.resetHolder = function() {
-    var cellW = this.els.cells.not('.monthlabel').eq(0).outerWidth();
+    var cellW = this.els.cells.eq(0).outerWidth();
 
-    this.els.calendar.css({ width: (cellW * this.els.cells.length) + (this.options.months * 2) });
+    this.els.calendar.css({ width: (cellW * this.els.cells.length) });
 };
 
 DatePicker.prototype.logic = function() {
