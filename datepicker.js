@@ -9,10 +9,13 @@ var DatePicker = function(container, options) {
         selectors: {
             monthsHolder: '.dp-months-holder',
             calHolder: '.dp-cal-holder',
+            arrivalBlock: '.dp-cal-arrival-area',
+            departureBlock: '.dp-cal-departure-area',
             arrivalHandle: '.dp-cal-arrival-handle',
             departureHandle: '.dp-cal-departure-handle'
         },
-        months: 16
+        months: 16,
+        defaultNights: 4
     }, options);
     
     this.profiler = {
@@ -27,6 +30,7 @@ DatePicker.prototype.locale = {
 DatePicker.prototype.init = function() {
     this.state = {};
     this.els = {};
+    this.sizes = {};
     
     for (var prop in this.options.selectors) {
         this.els[prop] = this.container.find(this.options.selectors[prop]);
@@ -60,7 +64,7 @@ DatePicker.prototype.generateLabels = function() {
         curr = (curr === 11) ? 0 : (curr + 1);
     }
     
-    monthLabels += '</tr></table>';
+    monthLabels += '<\/tr><\/table>';
     
     this.els.monthsHolder.append(monthLabels);
 };
@@ -80,12 +84,15 @@ DatePicker.prototype.generateCalendar = function() {
         type: 'list'
     }));
  
-    this.els.calHolder.append(this.els.calendar);
+    this.els.calHolder.prepend(this.els.calendar);
 };
 DatePicker.prototype.resetHolder = function() {
-    var cellW = this.els.cells.eq(0).outerWidth();
+    this.sizes.cell = this.els.cells.eq(0).outerWidth();
+    this.sizes.calendar = this.sizes.cell * this.els.cells.length;
 
-    this.els.calendar.css({ width: (cellW * this.els.cells.length) });
+    this.els.calendar.css({ width: this.sizes.calendar });
+    this.els.arrivalBlock.css({ width: this.sizes.calendar });
+    this.els.departureBlock.css({ width: this.sizes.calendar });
 };
 
 DatePicker.prototype.logic = function() {
@@ -96,20 +103,21 @@ DatePicker.prototype.handleCellsClick = function(e) {
         date = el.data('date');
 
     if (!this.state.checkin && !this.state.checkout) {
+        var dateO = this.YMDToDate(date),
+            checkout = this.dateToYMD(new Date(dateO.getFullYear(), dateO.getMonth(), dateO.getDate() + this.options.defaultNights)),
+            checkoutCell = this.els.cells.filter('[data-date="' + checkout + '"]');
+        
         // First click
         this.state.checkin = date;
-        this.els.arrivalHandle.addClass('active').css({ left: el.position().left });
-        this.els.arrivalHandle.html(el.html());
-    }
-    else if (this.state.checkin && ! this.state.checkout) {
-        // Second click
-        this.state.checkout = date;
+        this.state.checkout = checkout;
 
-        this.checkDatesState();
-        this.selectCurrentDates();
+        this.els.calHolder.addClass('controls');
+        this.els.arrivalBlock.css({ left: el.position().left + this.sizes.cell / 2 - this.sizes.calendar });
+        this.els.departureBlock.css({ left: checkoutCell.position().left + this.sizes.cell / 2 });
     }
     else {
         // n-th click
+        
     }
 };
 DatePicker.prototype.selectCurrentDates = function() {
