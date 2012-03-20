@@ -128,23 +128,29 @@ DatePicker.prototype.handleDragBlock = function(e) {
         el = $(e.currentTarget),
         left = el.hasClass('dp-cal-arrival-handle');
     
-    var handleBlockMove = function(e) {
-        var x = e.pageX - that.sizes.offset;
+    var handleDragMove = function(e) {
+        var x = e.pageX - that.sizes.offset,
+            i = x / that.sizes.cell,
+            pos = that.sizes.cell * Math.ceil(i) - that.sizes.cell / 2;
 
         if (left) {
-            that.els.arrivalBlock.css({ left: x - that.sizes.calendar });
+            that.els.arrivalBlock.css({ left: pos - that.sizes.calendar });
         }
         else {
-            that.els.departureBlock.css({ left: x });
+            that.els.departureBlock.css({ left: pos });
         }
     };
     
-    var resetHandlers = function() {
+    var handleDragEnd = function() {
         doc.off('.datepicker');
+        
+        that.els.calHolder.removeClass('dragging');
     };
     
-    doc.on('mousemove.datepicker', handleBlockMove);
-    doc.on('mouseup.datepicker', resetHandlers);
+    doc.on('mousemove.datepicker', handleDragMove);
+    doc.on('mouseup.datepicker', handleDragEnd);
+    
+    this.els.calHolder.addClass('dragging');
 };
 DatePicker.prototype.selectCurrentDates = function() {
     var checkin = this.els.cells.filter('[data-date="' + this.state.checkin + '"]'),

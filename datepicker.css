@@ -73,6 +73,9 @@
             overflow: hidden;
             position: relative;
         }
+        .datepicker .dp-cal-holder.dragging {
+            cursor: col-resize;
+        }
             .datepicker .calendar-list {
                 width: 90000px;
                 
