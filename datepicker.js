@@ -9,6 +9,7 @@ var DatePicker = function(container, options) {
         selectors: {
             monthsHolder: '.dp-months-holder',
             calHolder: '.dp-cal-holder',
+            calHandles: '.dp-cal-handle',
             arrivalBlock: '.dp-cal-arrival-area',
             departureBlock: '.dp-cal-departure-area',
             arrivalHandle: '.dp-cal-arrival-handle',
@@ -89,6 +90,8 @@ DatePicker.prototype.generateCalendar = function() {
 DatePicker.prototype.resetHolder = function() {
     this.sizes.cell = this.els.cells.eq(0).outerWidth();
     this.sizes.calendar = this.sizes.cell * this.els.cells.length;
+    
+    this.sizes.offset = this.els.calHolder.offset().left;
 
     this.els.calendar.css({ width: this.sizes.calendar });
     this.els.arrivalBlock.css({ width: this.sizes.calendar });
@@ -97,6 +100,7 @@ DatePicker.prototype.resetHolder = function() {
 
 DatePicker.prototype.logic = function() {
     this.els.calendar.on('click', '.calendar-day', $.proxy(this.handleCellsClick, this));
+    this.els.calHandles.on('mousedown', $.proxy(this.handleDragBlock, this));
 };
 DatePicker.prototype.handleCellsClick = function(e) {
     var el = $(e.currentTarget),
@@ -104,47 +108,50 @@ DatePicker.prototype.handleCellsClick = function(e) {
 
     if (!this.state.checkin && !this.state.checkout) {
         var dateO = this.YMDToDate(date),
-            checkout = this.dateToYMD(new Date(dateO.getFullYear(), dateO.getMonth(), dateO.getDate() + this.options.defaultNights)),
-            checkoutCell = this.els.cells.filter('[data-date="' + checkout + '"]');
+            checkout = this.dateToYMD(new Date(dateO.getFullYear(), dateO.getMonth(), dateO.getDate() + this.options.defaultNights));
         
         // First click
         this.state.checkin = date;
         this.state.checkout = checkout;
 
         this.els.calHolder.addClass('controls');
-        this.els.arrivalBlock.css({ left: el.position().left + this.sizes.cell / 2 - this.sizes.calendar });
-        this.els.departureBlock.css({ left: checkoutCell.position().left + this.sizes.cell / 2 });
+        this.selectCurrentDates();
     }
     else {
         // n-th click
         
     }
 };
-DatePicker.prototype.selectCurrentDates = function() {
-    this.els.cells.filter('[data-date="' + this.state.checkin + '"]').addClass('checkin');
-    this.els.cells.filter('[data-date="' + this.state.checkout + '"]').addClass('checkout');
-    this.selectRange(this.state.checkin, this.state.checkout, 'selected');
-};
-DatePicker.prototype.checkDatesState = function() {
-    var date1_str = this.state.checkin,
-        date2_str = this.state.checkout;
-        
-    if (date1_str > date2_str) {
-        this.state.checkin = date2_str;
-        this.state.checkout = date1_str;
-    }
-};
-DatePicker.prototype.selectRange = function(ymd1, ymd2, selection_class) {
-    var d1_arr = ymd1.split('-'),
-        d2_arr = ymd2.split('-'),
-        date1 = new Date(+d1_arr[0], +d1_arr[1] - 1, +d1_arr[2] - 1),// offset this so we can increment in while loop straight away
-        date2 = +(new Date(+d2_arr[0], +d2_arr[1] - 1, +d2_arr[2]));
+DatePicker.prototype.handleDragBlock = function(e) {
+    var that = this,
+        doc = $(document),
+        el = $(e.currentTarget),
+        left = el.hasClass('dp-cal-arrival-handle');
+    
+    var handleBlockMove = function(e) {
+        var x = e.pageX - that.sizes.offset;
 
-    this.els.cells.filter('.' + selection_class).removeClass(selection_class);
-    while (+date1 < date2) {
-        date1.setDate(date1.getDate() + 1);
-        curr_cell = this.els.cells.filter('[data-date="' + this.dateToYMD(date1) + '"]').addClass(selection_class);
+        if (left) {
+            that.els.arrivalBlock.css({ left: x - that.sizes.calendar });
+        }
+        else {
+            that.els.departureBlock.css({ left: x });
+        }
     };
+    
+    var resetHandlers = function() {
+        doc.off('.datepicker');
+    };
+    
+    doc.on('mousemove.datepicker', handleBlockMove);
+    doc.on('mouseup.datepicker', resetHandlers);
+};
+DatePicker.prototype.selectCurrentDates = function() {
+    var checkin = this.els.cells.filter('[data-date="' + this.state.checkin + '"]'),
+        checkout = this.els.cells.filter('[data-date="' + this.state.checkout + '"]');
+
+    this.els.arrivalBlock.css({ left: checkin.position().left + this.sizes.cell / 2 - this.sizes.calendar });
+    this.els.departureBlock.css({ left: checkout.position().left + this.sizes.cell / 2 });
 };
 DatePicker.prototype.dateToYMD = function(date) {
     return date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
@@ -152,8 +159,4 @@ DatePicker.prototype.dateToYMD = function(date) {
 DatePicker.prototype.YMDToDate = function(ymd) {
     var darr = ymd.split('-');
     return new Date(+darr[0], +darr[1] - 1, +darr[2]);
-};
-DatePicker.prototype.YMDToDateMonth = function(ymd) {
-    var darr = ymd.split('-');
-    return new Date(+darr[0], +darr[1] - 1, 1);
 };
