@@ -118,7 +118,7 @@ DatePicker.prototype.handleCellsClick = function(e) {
         this.state.checkout = checkout;
 
         this.els.calHolder.addClass('controls');
-        this.selectCurrentDates();
+        this.setPosFromDates();
     }
     else {
         // n-th click. probably won't have any
@@ -153,18 +153,20 @@ DatePicker.prototype.handleDragBlock = function(e) {
         renderT = now;
 
         if (left) {
-            that.els.arrivalBlock.css({ left: pos - that.sizes.calendar });
             that.state.arrH = i;
         }
         else {
-            that.els.departureBlock.css({ left: pos });
             that.state.depH = i;
         }
+        
+        that.setHandlePos();
     };
     
     var handleDragEnd = function() {
         doc.off('mousemove.datepicker', handleDragMove);
         doc.off('mouseup.datepicker', handleDragEnd);
+        
+        that.setDatesFromPos();
         
         that.els.calHolder.removeClass('dragging');
     };
@@ -174,15 +176,22 @@ DatePicker.prototype.handleDragBlock = function(e) {
     
     this.els.calHolder.addClass('dragging');
 };
-DatePicker.prototype.selectCurrentDates = function() {
+DatePicker.prototype.setPosFromDates = function() {
     var checkin = this.els.cells.filter('[data-date="' + this.state.checkin + '"]'),
         checkout = this.els.cells.filter('[data-date="' + this.state.checkout + '"]');
         
     this.state.arrH = checkin.index() + 1;
     this.state.depH = checkout.index() + 1;
 
-    this.els.arrivalBlock.css({ left: checkin.position().left + this.sizes.cell / 2 - this.sizes.calendar });
-    this.els.departureBlock.css({ left: checkout.position().left + this.sizes.cell / 2 });
+    this.setHandlePos();
+};
+DatePicker.prototype.setHandlePos = function() {
+    this.els.arrivalBlock.css({ left: this.sizes.cell * this.state.arrH - this.sizes.cell / 2 - this.sizes.calendar });
+    this.els.departureBlock.css({ left: this.sizes.cell * this.state.depH - this.sizes.cell / 2 });
+};
+DatePicker.prototype.setDatesFromPos = function() {
+    this.state.checkin = this.els.cells.eq(this.state.arrH - 1).data('date');
+    this.state.checkout = this.els.cells.eq(this.state.depH - 1).data('date');
 };
 DatePicker.prototype.dateToYMD = function(date) {
     return date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
