@@ -130,7 +130,8 @@ DatePicker.prototype.handleDragBlock = function(e) {
         doc = $(document),
         el = $(e.currentTarget),
         left = el.hasClass('dp-cal-arrival-handle'),
-        renderT = +(new Date());
+        renderT = +(new Date()),
+        len = that.els.cells.length;
     
     var handleDragMove = function(e) {
         var now = +(new Date());
@@ -139,28 +140,23 @@ DatePicker.prototype.handleDragBlock = function(e) {
         }
 
         var x = e.pageX - that.sizes.offset,
-            i = Math.ceil(x / that.sizes.cell),
-            pos = that.sizes.cell * i - that.sizes.cell / 2;
-            
-        renderT = now;
+            i, pos;
         
-        if (x < 1 || i > that.els.cells.length) {
-            return;
+        if (left) {
+            i = Math.min(that.state.depH - 1, Math.max(1, Math.ceil(x / that.sizes.cell)));
         }
+        else {
+            i = Math.min(len, Math.max(that.state.arrH + 1, Math.ceil(x / that.sizes.cell)));
+        }
+            
+        pos = that.sizes.cell * i - that.sizes.cell / 2;
+        renderT = now;
 
         if (left) {
-            if (i >= that.state.depH) {
-                return;
-            }
-            
             that.els.arrivalBlock.css({ left: pos - that.sizes.calendar });
             that.state.arrH = i;
         }
         else {
-            if (i <= that.state.arrH) {
-                return;
-            }
-            
             that.els.departureBlock.css({ left: pos });
             that.state.depH = i;
         }
