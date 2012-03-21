@@ -15,6 +15,8 @@
 */
     .dp-months-holder {
         padding: 7px 0;
+        position: relative;
+        overflow: hidden;
     }
         .dp-months-holder .calendar-month-labels {
             font-size: 9px;
@@ -26,6 +28,31 @@
         .dp-months-holder .calendar-month-labels > li {
             width: 8.3%;
             display: inline-block;
+        }
+        .dp-months-holder .dp-viewport {
+            width: 50px;
+            height: 100%;
+
+            display: block;
+            
+            position: absolute;
+            left: 0;
+            top: 0;
+            
+            -moz-opacity: .5;
+                 opacity: .5;
+
+            -ms-filter: "alpha(opacity=50)";
+                 filter: alpha(opacity=50);
+  
+            border-top: 1px solid #c6c9cb;
+            background: #dde0e2 url('img/datepicker/dp-dots.png') no-repeat center center;
+            
+            cursor: move;
+            cursor: -moz-grab;
+        }
+        .dp-months-holder .dp-viewport:active {
+            cursor: -moz-grabbing;
         }
 
 /* 

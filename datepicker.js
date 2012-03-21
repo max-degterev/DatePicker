@@ -11,7 +11,9 @@ var DatePicker = function(container, options) {
     this.options = $.extend({
         selectors: {
             monthsHolder: '.dp-months-holder',
+            viewport: '.dp-viewport',
 
+            calCrop: '.dp-cal-crop',
             calWrap: '.dp-cal-wrap',
 
             calHolder: '.dp-cal-holder',
@@ -48,6 +50,8 @@ DatePicker.prototype.init = function() {
     for (var prop in this.options.selectors) {
         this.els[prop] = this.container.find(this.options.selectors[prop]);
     }
+    
+    console.log('select: ' + ((+(new Date()) - this.profiler.start)));
 
     this.now = new Date();
     this.start = new Date(this.now.getFullYear(), this.now.getMonth(), this.now.getDate());
@@ -77,8 +81,9 @@ DatePicker.prototype.generateLabels = function() {
     }
 
     monthLabels += '<\/ul>';
-
-    this.els.monthsHolder.append(monthLabels);
+    
+    this.els.monthsLabels = $(monthLabels);
+    this.els.monthsHolder.prepend(this.els.monthsLabels);
 };
 DatePicker.prototype.generateCalendar = function() {
     this.els.calendar = $(Calendar.generate({
@@ -102,23 +107,35 @@ DatePicker.prototype.generateCalendar = function() {
 DatePicker.prototype.getSizes = function() {
     this.sizes.cell = this.els.cells.eq(0).outerWidth();
     this.sizes.calendar = this.sizes.cell * this.els.cells.length;
+
+    this.sizes.offset = this.els.calCrop.offset().left;
     
-    this.sizes.offset = this.els.calHolder.offset().left;
+    this.sizes.wrap = this.els.calCrop.outerWidth();
+    this.sizes.shift = parseInt(this.els.calWrap.css('left'), 10);
+    
+    this.sizes.monthLabel = (this.sizes.wrap / this.options.months) | 0;
+    this.sizes.viewport = Math.ceil(this.sizes.calendar / this.sizes.wrap) + this.sizes.monthLabel;
 
     this.els.calendar.css({ width: this.sizes.calendar });
+    this.els.viewport.css({ width: this.sizes.viewport });
+    this.els.monthsLabels.children('li').css({ width: this.sizes.monthLabel });
 };
 // ==================================================================
 // LOGYK SECTION
 // ==================================================================
 DatePicker.prototype.logic = function() {
     this.mainLogic();
+    this.labelsLogic();
     this.calendarLogic();
     this.controlsLogic();
+};
+DatePicker.prototype.labelsLogic = function() {
+    
 };
 DatePicker.prototype.mainLogic = function() {
     var that = this;
     var resetOffset = function() {
-        that.sizes.offset = that.els.calHolder.offset().left;
+        that.sizes.offset = that.els.calCrop.offset().left;
     };
     $(window).on('resize', resetOffset);
 };
@@ -172,7 +189,7 @@ DatePicker.prototype.controlsLogic = function() {
 
         renderT = now;
 
-        var x = e.pageX - that.sizes.offset,
+        var x = e.pageX - that.sizes.offset - that.sizes.shift,
             i;
         
         if (left) {
@@ -219,7 +236,7 @@ DatePicker.prototype.controlsLogic = function() {
 
         renderT = now;
 
-        var diff = e.pageX - startP - that.sizes.offset,
+        var diff = e.pageX - startP - that.sizes.offset - that.sizes.shift,
             idiff = that.state.rHandle - that.state.lHandle,
             x, i;
         
