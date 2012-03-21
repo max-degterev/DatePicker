@@ -15,7 +15,7 @@ var DatePicker = function(container, options) {
             arrivalHandle: '.dp-cal-arrival-handle',
             departureHandle: '.dp-cal-departure-handle'
         },
-        months: 16,
+        months: 12,
         defaultNights: 4
     }, options);
     
@@ -97,10 +97,13 @@ DatePicker.prototype.resetHolder = function() {
     this.els.arrivalBlock.css({ width: this.sizes.calendar });
     this.els.departureBlock.css({ width: this.sizes.calendar });
 };
-
+DatePicker.prototype.resetOffset = function() {
+    this.sizes.offset = this.els.calHolder.offset().left;
+};
 DatePicker.prototype.logic = function() {
     this.els.calendar.on('click', '.calendar-day', $.proxy(this.handleCellsClick, this));
     this.els.calHandles.on('mousedown', $.proxy(this.handleDragBlock, this));
+    $(window).on('resize', $.proxy(this.resetOffset, this));
 };
 DatePicker.prototype.handleCellsClick = function(e) {
     var el = $(e.currentTarget),
@@ -118,7 +121,7 @@ DatePicker.prototype.handleCellsClick = function(e) {
         this.selectCurrentDates();
     }
     else {
-        // n-th click
+        // n-th click. probably won't have any
         
     }
 };
@@ -141,20 +144,31 @@ DatePicker.prototype.handleDragBlock = function(e) {
             
         renderT = now;
         
-        if (x < 0 || i > that.els.cells.length) {
+        if (x < 1 || i > that.els.cells.length) {
             return;
         }
 
         if (left) {
-            that.els.arrivalBlock.css({ left: pos - that.sizes.calendar }).data('cell', i);
+            if (i >= that.state.depH) {
+                return;
+            }
+            
+            that.els.arrivalBlock.css({ left: pos - that.sizes.calendar });
+            that.state.arrH = i;
         }
         else {
-            that.els.departureBlock.css({ left: pos }).data('cell', i);
+            if (i <= that.state.arrH) {
+                return;
+            }
+            
+            that.els.departureBlock.css({ left: pos });
+            that.state.depH = i;
         }
     };
     
     var handleDragEnd = function() {
-        doc.off('.datepicker');
+        doc.off('mousemove.datepicker', handleDragMove);
+        doc.off('mouseup.datepicker', handleDragEnd);
         
         that.els.calHolder.removeClass('dragging');
     };
@@ -167,6 +181,9 @@ DatePicker.prototype.handleDragBlock = function(e) {
 DatePicker.prototype.selectCurrentDates = function() {
     var checkin = this.els.cells.filter('[data-date="' + this.state.checkin + '"]'),
         checkout = this.els.cells.filter('[data-date="' + this.state.checkout + '"]');
+        
+    this.state.arrH = checkin.index() + 1;
+    this.state.depH = checkout.index() + 1;
 
     this.els.arrivalBlock.css({ left: checkin.position().left + this.sizes.cell / 2 - this.sizes.calendar });
     this.els.departureBlock.css({ left: checkout.position().left + this.sizes.cell / 2 });
