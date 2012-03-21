@@ -9,86 +9,50 @@
 
 	cursor: default;
 }
+
+/* 
+    MONTHS HEADER AREA
+*/
     .dp-months-holder {
         padding: 7px 0;
     }
         .dp-months-holder .calendar-month-labels {
-            width: 100%;
-        
             font-size: 9px;
             line-height: 9px;
             color: #7f7f7f;
             text-transform: uppercase;
             text-align: center;
         }
-    
-    .datepicker .dp-cal-wrap {
-        position: relative;
-    }
-        .datepicker .dp-cal-cover {
-            width: 100%;
-            height: 100%;
-            
-            margin-left: 2px;
-            
-            display: none;
-            
-            position: absolute;
-            left: -100%;
-            top: 0;
+        .dp-months-holder .calendar-month-labels > li {
+            width: 8.3%;
+            display: inline-block;
         }
-        .datepicker .dp-cal-cover.dp-cal-arrival-area {
-            margin-left: -4px;
-        }
-        .datepicker .controls .dp-cal-cover {
-            display: block;
-        }
-            .datepicker .dp-translucency {
-                height: 100%;
 
-                display: block;
-                
-                -moz-opacity: .2;
-                     opacity: .2;
+/* 
+    CALENDARRRR AREA
+*/
+   .datepicker .dp-cal-crop {
+       height: 70px;
+       position: relative;
+       overflow: hidden;
+   }
+       .datepicker .dp-cal-wrap {
+           position: absolute;
+           left: 0;
+           top: 0;
+       }
+       .datepicker .dp-cal-wrap.dragging {
+           cursor: col-resize;
+       }
 
-                -ms-filter: "alpha(opacity=20)";
-                     filter: alpha(opacity=20);
-                background: #505f6c;
-            }
-            .datepicker .dp-cal-handle {
-                width: 24px;
-                height: 65px;
-                
-                margin-left: -6px;
-
-                display: block;
-
-                position: absolute;
-                left: 0;
-                top: 0;
-            
-                background: url('img/datepicker/dp-right-handle.png') no-repeat;
-                cursor: col-resize;
-            }
-            .datepicker .dp-cal-handle.dp-cal-arrival-handle {
-                margin-right: -6px;
-                left: auto;
-                right: 0;
-                
-                background: url('img/datepicker/dp-left-handle.png') no-repeat;
-            }
-        .datepicker .dp-cal-holder {
-            overflow: hidden;
-            position: relative;
-        }
-        .datepicker .dp-cal-holder.dragging {
-            cursor: col-resize;
-        }
+/* CALENDARRR */
             .datepicker .calendar-list {
                 width: 90000px;
                 
                 margin-left: -1px;
                 border-top: 1px solid #dcdfe2;
+                background: #fff;
+                text-align: center;
             }
                 .datepicker .calendar-day {
                     width: 30px;
@@ -100,10 +64,6 @@
                     vertical-align: top;
                     
                     border-left: 1px solid #dcdfe2;
-                    
-                    background: #fff;
-                    
-                    text-align: center;
                 }
                 .datepicker .calendar-day.monthlabel {
                     position: relative;
@@ -144,3 +104,61 @@
                         
                         background: #fff;
                     }
+/* 
+    CALENDARRR CONTROLZ
+ */
+            .datepicker .dp-cal-controls {
+                display: none;
+            }
+            .datepicker .controls .dp-cal-controls {
+                display: block;
+            }
+                    .datepicker .dp-cal-cover {
+                        width: 100%;
+                        height: 100%;
+            
+                        margin-left: 2px;
+            
+                        display: block;
+            
+                        position: absolute;
+                        left: -100%;
+                        top: 0;
+                    }
+                    .datepicker .dp-cal-cover.dp-cal-left-area {
+                        margin-left: -4px;
+                    }
+                        .datepicker .dp-translucency {
+                            height: 100%;
+
+                            display: block;
+                
+                            -moz-opacity: .2;
+                                 opacity: .2;
+
+                            -ms-filter: "alpha(opacity=20)";
+                                 filter: alpha(opacity=20);
+                            background: #505f6c;
+                        }
+                        .datepicker .dp-cal-handle {
+                            width: 24px;
+                            height: 65px;
+                
+                            margin-left: -6px;
+
+                            display: block;
+
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+            
+                            background: url('img/datepicker/dp-right-handle.png') no-repeat;
+                            cursor: col-resize;
+                        }
+                        .datepicker .dp-cal-handle.dp-cal-left-handle {
+                            margin-right: -6px;
+                            left: auto;
+                            right: 0;
+                
+                            background: url('img/datepicker/dp-left-handle.png') no-repeat;
+                        }
