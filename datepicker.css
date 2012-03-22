@@ -30,6 +30,9 @@
             width: 8.3%;
             display: inline-block;
             float: left;
+
+/*            -moz-box-sizing: border-box;
+            border-left: 1px solid #ccc;*/
         }
         .dp-months-holder .dp-viewport {
             width: 50px;

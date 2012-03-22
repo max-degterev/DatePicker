@@ -141,7 +141,7 @@ DatePicker.prototype.labelsLogic = function() {
     var that = this,
         doc = $(document),
         renderT = +(new Date()),
-        q = (this.sizes.calendar - this.sizes.wrap) / (this.sizes.wrap - this.sizes.viewport - that.sizes.voffset);
+        q = (this.sizes.calendar - this.sizes.wrap) / (this.sizes.wrap - this.sizes.viewport - this.sizes.voffset);
         
     var getOffsetByPos = function(pageX) {
         return Math.min(that.sizes.wrap - that.sizes.viewport - that.sizes.voffset, Math.max(0, pageX - that.sizes.offset - that.sizes.viewport / 2))
