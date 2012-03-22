@@ -103,7 +103,8 @@ Calendar = function() {
 				html += '<li class="calendar-day'
 				+ (firstweek && !s.first_month ? ' firstweek' : '')
 				+ ((day === 1 && s.first_month) ? ' firstday' : '')
-				+ ((s.monthlabels && (date_day === 0) && firstweek) ? ' monthlabel' : '')
+				+ ((s.monthlabels && !s.mlabels_firstday && (date_day === 0) && firstweek) ? ' monthlabel' : '')
+                + ((s.monthlabels && s.mlabels_firstday && (day === 1)) ? ' monthlabel' : '')
 				+ ((date_day === 1) ? ' monday' : '')
 				+ ((date_day === 0 || date_day === 6) ? ' weekend' : '')
 				+ ((now_time > date_time) ? ' past' : '') + '"'
@@ -124,7 +125,8 @@ Calendar = function() {
 				+ day
                 + ((s.daylabels) ? '<em>' + cal_days_labels[date_day ? date_day - 1 : 6] + '<\/em>' : '')
 				+ '<\/span>'
-                + ((s.monthlabels && (date_day === 0) && firstweek) ? '<strong>' + cal_months_labels[month] + '<\/strong>' : '')
+                + ((s.monthlabels && !s.mlabels_firstday && (date_day === 0) && firstweek) ? '<strong>' + cal_months_labels[month] + '<\/strong>' : '')
+                + ((s.monthlabels && s.mlabels_firstday && (day === 1)) ? '<strong>' + cal_months_labels[month] + '<\/strong>' : '')
 				+ '<\/li>';
 
 				date_time += 86400000; // 1000*60*60*24

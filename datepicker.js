@@ -97,6 +97,7 @@ DatePicker.prototype.generateCalendar = function() {
         },
         daylabels: true,
         monthlabels: true,
+        mlabels_firstday: true,
         type: 'list'
     }));
 
