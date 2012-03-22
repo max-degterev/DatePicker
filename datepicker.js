@@ -23,6 +23,8 @@ var DatePicker = function(container, options) {
             lArea: '.dp-cal-left-area',
             rArea: '.dp-cal-right-area',
             mArea: '.dp-cal-middle-area',
+            
+            trans: '.dp-translucency',
 
             lHandle: '.dp-cal-left-handle',
             rHandle: '.dp-cal-right-handle'
@@ -174,7 +176,14 @@ DatePicker.prototype.calendarLogic = function() {
         var el = $(this),
             date = el.data('date'),
             dateO = that.YMDToDate(date),
-            ndate = that.dateToYMD(new Date(dateO.getFullYear(), dateO.getMonth(), dateO.getDate() + that.options.defaultNights));
+            ndateO = new Date(dateO.getFullYear(), dateO.getMonth(), dateO.getDate() + that.options.defaultNights),
+            limO = new Date(that.end.getFullYear(), that.end.getMonth(), Calendar.getDaysNum(that.end.getFullYear(), that.end.getMonth())),
+            ndate = that.dateToYMD(ndateO);
+            
+        if (+ndateO > +limO) {
+            date = that.dateToYMD(new Date(limO.getFullYear(), limO.getMonth(), limO.getDate() - that.options.defaultNights));
+            ndate = that.dateToYMD(limO);
+        }
 
         that.state.lDate = date;
         that.state.rDate = ndate;
@@ -299,9 +308,22 @@ DatePicker.prototype.controlsLogic = function() {
         that.setDatesFromPos();
     };
 
+    var areaMoveByClick = function(e) {
+        var pos = e.pageX - (that.els.mArea.width() / 2) - that.sizes.offset - that.sizes.shift,
+            x = pos,
+            idiff = that.state.rHandle - that.state.lHandle,
+            i = Math.min(len - 1 - idiff, Math.max(0, Math.ceil(x / that.sizes.cell) - 1));
+            
+        that.state.lHandle = i;
+        that.state.rHandle = i + idiff;
+        that.setHandlePos();
+        that.setMiddlePos();
+    };
 
     this.els.calHandles.on('mousedown', handleDragStart);
     this.els.mArea.on('mousedown', areaDragStart);
+    
+    this.els.trans.on('click', areaMoveByClick);
 };
 // ==================================================================
 // UTILITY SECTION
