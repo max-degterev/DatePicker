@@ -19,6 +19,7 @@
         overflow: hidden;
     }
         .dp-months-holder .calendar-month-labels {
+            overflow: hidden;
             font-size: 9px;
             line-height: 9px;
             color: #7f7f7f;
@@ -28,6 +29,7 @@
         .dp-months-holder .calendar-month-labels > li {
             width: 8.3%;
             display: inline-block;
+            float: left;
         }
         .dp-months-holder .dp-viewport {
             width: 50px;

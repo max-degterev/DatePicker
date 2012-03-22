@@ -56,7 +56,6 @@ DatePicker.prototype.init = function() {
     this.now = new Date();
     this.start = new Date(this.now.getFullYear(), this.now.getMonth(), this.now.getDate());
     this.end = new Date(this.now.getFullYear(), this.now.getMonth() + this.options.months, this.now.getDate());
-    
 
     this.generateLabels();
     console.log('labels: ' + ((+(new Date()) - this.profiler.start)));
@@ -75,7 +74,7 @@ DatePicker.prototype.generateLabels = function() {
     var monthLabels = '<ul class="calendar-month-labels">',
         curr = this.start.getMonth();
     
-    for (var i = 0; i < this.options.months; i++) {
+    for (var i = 0; i <= this.options.months; i++) {
         monthLabels += '<li>' + this.locale.month_labels[curr] + '<\/li>';
         curr = (curr === 11) ? 0 : (curr + 1);
     }
@@ -113,11 +112,12 @@ DatePicker.prototype.getSizes = function() {
     this.sizes.wrap = this.els.calCrop.outerWidth();
     this.sizes.shift = parseInt(this.els.calWrap.css('left'), 10);
     
-    this.sizes.monthLabel = (this.sizes.wrap / this.options.months) | 0;
-    this.sizes.viewport = this.sizes.wrap * this.sizes.wrap / this.sizes.calendar;
+    this.sizes.monthLabel = (this.sizes.wrap / (this.options.months + 1)) | 0;
+    this.sizes.voffset = (this.sizes.monthLabel * (Calendar.getDaysNum(this.start.getFullYear(), this.start.getMonth()) - this.start.getDate()) / 30) | 0;
+    this.sizes.viewport = this.sizes.wrap * (this.sizes.wrap - this.sizes.voffset) / this.sizes.calendar;//or this.sizes.monthLabel;
 
     this.els.calendar.css({ width: this.sizes.calendar });
-    this.els.viewport.css({ width: this.sizes.viewport });
+    this.els.viewport.css({ width: this.sizes.viewport, left: this.sizes.voffset });
     this.els.monthsLabels.children('li').css({ width: this.sizes.monthLabel });
 };
 // ==================================================================
@@ -140,10 +140,10 @@ DatePicker.prototype.labelsLogic = function() {
     var that = this,
         doc = $(document),
         renderT = +(new Date()),
-        q = (this.sizes.calendar - this.sizes.wrap) / (this.sizes.wrap - this.sizes.viewport);
+        q = (this.sizes.calendar - this.sizes.wrap) / (this.sizes.wrap - this.sizes.viewport - that.sizes.voffset);
         
     var getOffsetByPos = function(pageX) {
-        return Math.min(that.sizes.wrap - that.sizes.viewport, Math.max(0, pageX - that.sizes.offset - that.sizes.viewport / 2))
+        return Math.min(that.sizes.wrap - that.sizes.viewport - that.sizes.voffset, Math.max(0, pageX - that.sizes.offset - that.sizes.viewport / 2))
     };
     
     var vpDragStart = function(e) {
@@ -160,7 +160,7 @@ DatePicker.prototype.labelsLogic = function() {
         var x = getOffsetByPos(e.pageX);
         
         that.sizes.shift = -x * q;
-        that.setCalShift(x);
+        that.setCalShift(x + that.sizes.voffset);
     };
     var vpDragEnd = function(e) {
         doc.off('mousemove.datepicker', vpDragMove);
@@ -170,7 +170,7 @@ DatePicker.prototype.labelsLogic = function() {
     var vpMoveByClick = function(e) {
         var x = getOffsetByPos(e.pageX);
         that.sizes.shift = -x * q;
-        that.setCalShift(x);
+        that.setCalShift(x + that.sizes.voffset);
     };
 
     this.els.viewport.on('mousedown', vpDragStart);
