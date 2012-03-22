@@ -141,6 +141,10 @@ DatePicker.prototype.labelsLogic = function() {
         doc = $(document),
         renderT = +(new Date()),
         q = (this.sizes.calendar - this.sizes.wrap) / (this.sizes.wrap - this.sizes.viewport);
+        
+    var getOffsetByPos = function(pageX) {
+        return Math.min(that.sizes.wrap - that.sizes.viewport, Math.max(0, pageX - that.sizes.offset - that.sizes.viewport / 2))
+    };
     
     var vpDragStart = function(e) {
         doc.on('mousemove.datepicker', vpDragMove);
@@ -153,7 +157,7 @@ DatePicker.prototype.labelsLogic = function() {
         }
 
         renderT = now;
-        var x = Math.min(that.sizes.wrap - that.sizes.viewport, Math.max(0, e.pageX - that.sizes.offset - that.sizes.viewport / 2));
+        var x = getOffsetByPos(e.pageX);
         
         that.sizes.shift = -x * q;
         that.setCalShift(x);
@@ -162,8 +166,15 @@ DatePicker.prototype.labelsLogic = function() {
         doc.off('mousemove.datepicker', vpDragMove);
         doc.off('mouseup.datepicker', vpDragEnd);
     };
+    
+    var vpMoveByClick = function(e) {
+        var x = getOffsetByPos(e.pageX);
+        that.sizes.shift = -x * q;
+        that.setCalShift(x);
+    };
 
     this.els.viewport.on('mousedown', vpDragStart);
+    this.els.monthsHolder.on('click', vpMoveByClick);
 };
 DatePicker.prototype.calendarLogic = function() {
     var that = this;
