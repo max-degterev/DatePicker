@@ -114,7 +114,7 @@ DatePicker.prototype.getSizes = function() {
     this.sizes.shift = parseInt(this.els.calWrap.css('left'), 10);
     
     this.sizes.monthLabel = (this.sizes.wrap / this.options.months) | 0;
-    this.sizes.viewport = Math.ceil(this.sizes.calendar / this.sizes.wrap) + this.sizes.monthLabel;
+    this.sizes.viewport = this.sizes.wrap * this.sizes.wrap / this.sizes.calendar;
 
     this.els.calendar.css({ width: this.sizes.calendar });
     this.els.viewport.css({ width: this.sizes.viewport });
