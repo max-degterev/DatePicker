@@ -115,6 +115,7 @@ DatePicker.prototype.getSizes = function() {
     
     this.sizes.monthLabel = (this.sizes.wrap / (this.options.months + 1)) | 0;
     this.sizes.voffset = (this.sizes.monthLabel * (Calendar.getDaysNum(this.start.getFullYear(), this.start.getMonth()) - this.start.getDate()) / 30) | 0;
+    this.sizes.viewpos = this.sizes.voffset;
     this.sizes.viewport = this.sizes.wrap * (this.sizes.wrap - this.sizes.voffset) / this.sizes.calendar;//or this.sizes.monthLabel;
 
     this.els.calendar.css({ width: this.sizes.calendar });
@@ -140,13 +141,8 @@ DatePicker.prototype.mainLogic = function() {
 DatePicker.prototype.labelsLogic = function() {
     var that = this,
         doc = $(document),
-        renderT = +(new Date()),
-        q = (this.sizes.calendar - this.sizes.wrap) / (this.sizes.wrap - this.sizes.viewport - this.sizes.voffset);
+        renderT = +(new Date());
         
-    var getOffsetByPos = function(pageX) {
-        return Math.min(that.sizes.wrap - that.sizes.viewport - that.sizes.voffset, Math.max(0, pageX - that.sizes.offset - that.sizes.viewport / 2))
-    };
-    
     var vpDragStart = function(e) {
         doc.on('mousemove.datepicker', vpDragMove);
         doc.on('mouseup.datepicker', vpDragEnd);
@@ -158,10 +154,7 @@ DatePicker.prototype.labelsLogic = function() {
         }
 
         renderT = now;
-        var x = getOffsetByPos(e.pageX);
-        
-        that.sizes.shift = -x * q;
-        that.setCalShift(x + that.sizes.voffset);
+        that.calSlide(e.pageX - that.sizes.offset - that.sizes.viewport / 2);
     };
     var vpDragEnd = function(e) {
         doc.off('mousemove.datepicker', vpDragMove);
@@ -169,9 +162,7 @@ DatePicker.prototype.labelsLogic = function() {
     };
     
     var vpMoveByClick = function(e) {
-        var x = getOffsetByPos(e.pageX);
-        that.sizes.shift = -x * q;
-        that.setCalShift(x + that.sizes.voffset);
+        that.calSlide(e.pageX - that.sizes.offset - that.sizes.viewport / 2);
     };
 
     this.els.viewport.on('mousedown', vpDragStart);
@@ -209,6 +200,14 @@ DatePicker.prototype.controlsLogic = function() {
         mWidth,
         mLeft,
         startP;
+        
+    var checkLeftPos = function(pos) {
+        return ((that.sizes.shift !== 0) && (pos - that.sizes.offset - that.sizes.cell < 0));
+    };
+    
+    var checkRightPos = function(pos) {
+        return ((that.sizes.shift - that.sizes.wrap !== that.sizes.calendar) && (pos - that.sizes.offset - that.sizes.wrap + that.sizes.cell > 0));
+    };
 
     var handleDragStart = function(e) {
         var el = $(this);
@@ -230,10 +229,12 @@ DatePicker.prototype.controlsLogic = function() {
         var x = e.pageX - that.sizes.offset - that.sizes.shift;
         
         if (left) {
-            that.state.lHandle = Math.min(that.state.rHandle - 1, Math.max(0, Math.ceil(x / that.sizes.cell) - 1));
+            that.state.lHandle = Math.min(that.state.rHandle - 1, Math.max(0, Math.ceil(x / that.sizes.cell) - 1));        
+            checkLeftPos(e.pageX) && that.calSlideLeft();
         }
         else {
             that.state.rHandle = Math.min(len - 1, Math.max(that.state.lHandle + 1, Math.ceil(x / that.sizes.cell) - 1));
+            checkRightPos(e.pageX) && that.calSlideRight();
         }
 
         that.setHandlePos();
@@ -270,17 +271,21 @@ DatePicker.prototype.controlsLogic = function() {
             idiff = that.state.rHandle - that.state.lHandle,
             x, i;
         
-        if (diff > 0) {
-            x = mLeft + mWidth + diff;
-            i = Math.min(len - 1, Math.ceil(x / that.sizes.cell) - 1);
-            that.state.lHandle = i - idiff;
-            that.state.rHandle = i;
-        }
-        else {
+        if (e.pageX - startP <= 0) {
             x = mLeft + diff;
             i = Math.max(0, Math.ceil(x / that.sizes.cell) - 1);
             that.state.lHandle = i;
             that.state.rHandle = i + idiff;
+
+            checkLeftPos(e.pageX - mWidth) && that.calSlideLeft();
+        }
+        else {
+            x = mLeft + mWidth + diff;
+            i = Math.min(len - 1, Math.ceil(x / that.sizes.cell) - 1);
+            that.state.lHandle = i - idiff;
+            that.state.rHandle = i;
+
+            checkRightPos(e.pageX + mWidth) && that.calSlideRight();
         }
         
         // FIXME: shift controls holder instead of moving the handles
@@ -325,9 +330,21 @@ DatePicker.prototype.setMiddlePos = function() {
         left: this.sizes.cell * this.state.lHandle + this.sizes.cell / 2
     });
 };
-DatePicker.prototype.setCalShift = function(x) {
-    this.els.viewport.css({ left: x });
+DatePicker.prototype.calSlide = function(pos) {
+    var q = (this.sizes.calendar - this.sizes.wrap) / (this.sizes.wrap - this.sizes.viewport - this.sizes.voffset),
+        x = Math.min(this.sizes.wrap - this.sizes.viewport - this.sizes.voffset, Math.max(0, pos));
+
+    this.sizes.shift = -x * q;
+    this.sizes.viewpos = x;
+
     this.els.calWrap.css({ left: this.sizes.shift });
+    this.els.viewport.css({ left: this.sizes.viewpos + this.sizes.voffset });
+};
+DatePicker.prototype.calSlideLeft = function() {
+    this.calSlide(this.sizes.viewpos - 1);
+};
+DatePicker.prototype.calSlideRight = function() {
+    this.calSlide(this.sizes.viewpos + 1);    
 };
 DatePicker.prototype.dateToYMD = function(date) {
     return date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
