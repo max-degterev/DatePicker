@@ -227,21 +227,13 @@ DatePicker.prototype.controlsLogic = function() {
 
         renderT = now;
 
-        var x = e.pageX - that.sizes.offset - that.sizes.shift,
-            i;
+        var x = e.pageX - that.sizes.offset - that.sizes.shift;
         
         if (left) {
-            i = Math.min(that.state.rHandle - 1, Math.max(0, Math.ceil(x / that.sizes.cell) - 1));
+            that.state.lHandle = Math.min(that.state.rHandle - 1, Math.max(0, Math.ceil(x / that.sizes.cell) - 1));
         }
         else {
-            i = Math.min(len - 1, Math.max(that.state.lHandle + 1, Math.ceil(x / that.sizes.cell) - 1));
-        }
-
-        if (left) {
-            that.state.lHandle = i;
-        }
-        else {
-            that.state.rHandle = i;
+            that.state.rHandle = Math.min(len - 1, Math.max(that.state.lHandle + 1, Math.ceil(x / that.sizes.cell) - 1));
         }
 
         that.setHandlePos();
