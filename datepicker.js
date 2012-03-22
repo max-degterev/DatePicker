@@ -129,15 +129,41 @@ DatePicker.prototype.logic = function() {
     this.calendarLogic();
     this.controlsLogic();
 };
-DatePicker.prototype.labelsLogic = function() {
-    
-};
 DatePicker.prototype.mainLogic = function() {
     var that = this;
     var resetOffset = function() {
         that.sizes.offset = that.els.calCrop.offset().left;
     };
     $(window).on('resize', resetOffset);
+};
+DatePicker.prototype.labelsLogic = function() {
+    var that = this,
+        doc = $(document),
+        renderT = +(new Date()),
+        q = (this.sizes.calendar - this.sizes.wrap) / (this.sizes.wrap - this.sizes.viewport);
+    
+    var vpDragStart = function(e) {
+        doc.on('mousemove.datepicker', vpDragMove);
+        doc.on('mouseup.datepicker', vpDragEnd);
+    };
+    var vpDragMove = function(e) {
+        var now = +(new Date());
+        if (now - renderT < 30) {
+            return;
+        }
+
+        renderT = now;
+        var x = Math.min(that.sizes.wrap - that.sizes.viewport, Math.max(0, e.pageX - that.sizes.offset - that.sizes.viewport / 2));
+        
+        that.sizes.shift = -x * q;
+        that.setCalShift(x);
+    };
+    var vpDragEnd = function(e) {
+        doc.off('mousemove.datepicker', vpDragMove);
+        doc.off('mouseup.datepicker', vpDragEnd);
+    };
+
+    this.els.viewport.on('mousedown', vpDragStart);
 };
 DatePicker.prototype.calendarLogic = function() {
     var that = this;
@@ -196,7 +222,7 @@ DatePicker.prototype.controlsLogic = function() {
             i = Math.min(that.state.rHandle - 1, Math.max(0, Math.ceil(x / that.sizes.cell) - 1));
         }
         else {
-            i = Math.min(len, Math.max(that.state.lHandle + 1, Math.ceil(x / that.sizes.cell) - 1));
+            i = Math.min(len - 1, Math.max(that.state.lHandle + 1, Math.ceil(x / that.sizes.cell) - 1));
         }
 
         if (left) {
@@ -242,7 +268,7 @@ DatePicker.prototype.controlsLogic = function() {
         
         if (diff > 0) {
             x = mLeft + mWidth + diff;
-            i = Math.min(len, Math.ceil(x / that.sizes.cell) - 1);
+            i = Math.min(len - 1, Math.ceil(x / that.sizes.cell) - 1);
             that.state.lHandle = i - idiff;
             that.state.rHandle = i;
         }
@@ -281,6 +307,10 @@ DatePicker.prototype.setPosFromDates = function() {
     this.setHandlePos();
     this.setMiddlePos();
 };
+DatePicker.prototype.setDatesFromPos = function() {
+    this.state.lDate = this.els.cells.eq(this.state.lHandle).data('date');
+    this.state.rDate = this.els.cells.eq(this.state.rHandle).data('date');
+};
 DatePicker.prototype.setHandlePos = function() {
     this.els.lArea.css({ left: this.sizes.cell * this.state.lHandle + this.sizes.cell / 2 - this.sizes.calendar });
     this.els.rArea.css({ left: this.sizes.cell * this.state.rHandle + this.sizes.cell / 2 });
@@ -291,9 +321,9 @@ DatePicker.prototype.setMiddlePos = function() {
         left: this.sizes.cell * this.state.lHandle + this.sizes.cell / 2
     });
 };
-DatePicker.prototype.setDatesFromPos = function() {
-    this.state.lDate = this.els.cells.eq(this.state.lHandle).data('date');
-    this.state.rDate = this.els.cells.eq(this.state.rHandle).data('date');
+DatePicker.prototype.setCalShift = function(x) {
+    this.els.viewport.css({ left: x });
+    this.els.calWrap.css({ left: this.sizes.shift });
 };
 DatePicker.prototype.dateToYMD = function(date) {
     return date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
