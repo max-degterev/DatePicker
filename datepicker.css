@@ -1,3 +1,11 @@
+/* REMOVE THIS SHIT */
+html {
+    background: #F5F5F6;
+}
+
+
+/* END REMOVE THIS SHIT */
+
 .datepicker {
     width: 730px;
     margin: 60px auto;
@@ -33,6 +41,34 @@
 
 /*            -moz-box-sizing: border-box;
             border-left: 1px solid #ccc;*/
+        }
+        .dp-months-holder .dp-viewport-sel {
+            width: 10px;
+            height: 80%;
+            
+            margin-top: 2px;
+            
+            display: none;
+            
+            position: absolute;
+            left: 0;
+            top: 0;
+            
+            -moz-opacity: .5;
+                 opacity: .5;
+
+            -ms-filter: alpha(opacity=50);
+                filter: alpha(opacity=50);
+            
+            border-left: 1px solid #064678;
+            border-right: 1px solid #064678;
+            
+            background: #fff;
+            
+            pointer-events: none;
+        }
+        .controls .dp-months-holder .dp-viewport-sel {
+            display: block;
         }
         .dp-months-holder .dp-viewport {
             width: 50px;
@@ -142,7 +178,7 @@
             .datepicker .dp-cal-controls {
                 display: none;
             }
-            .datepicker .controls .dp-cal-controls {
+            .datepicker.controls .dp-cal-controls {
                 display: block;
             }
                     .datepicker .dp-cal-middle-area {

@@ -12,6 +12,7 @@ var DatePicker = function(container, options) {
         selectors: {
             monthsHolder: '.dp-months-holder',
             viewport: '.dp-viewport',
+            vpsel: '.dp-viewport-sel',
 
             calCrop: '.dp-cal-crop',
             calWrap: '.dp-cal-wrap',
@@ -223,9 +224,9 @@ DatePicker.prototype.calendarLogic = function() {
         that.state.lDate = date;
         that.state.rDate = ndate;
 
-        that.els.calWrap.addClass('controls');
         that.setPosFromDates();
-        
+        that.container.addClass('controls');
+
         that.els.calendar.off('click', '.calendar-day', handleCellsClick);
     };
     this.els.calendar.on('click', '.calendar-day', handleCellsClick);
@@ -288,8 +289,9 @@ DatePicker.prototype.controlsLogic = function() {
         doc.off('mouseup.datepicker', handleDragEnd);
         
         that.setMiddlePos();
+        that.setVPSelPos();
         that.setDatesFromPos();
-        
+
         that.els.calWrap.removeClass('dragging');
     };
     
@@ -335,6 +337,7 @@ DatePicker.prototype.controlsLogic = function() {
         // FIXME: shift controls holder instead of moving the handles
         that.setHandlePos();
         that.setMiddlePos();
+        that.setVPSelPos();
     };
     var areaDragEnd = function(e) {
         doc.off('mousemove.datepicker', areaDragMove);
@@ -353,6 +356,7 @@ DatePicker.prototype.controlsLogic = function() {
         that.state.rHandle = i + idiff;
         that.setHandlePos();
         that.setMiddlePos();
+        that.setVPSelPos();
     };
 
     this.els.calHandles.on('mousedown', handleDragStart);
@@ -372,6 +376,7 @@ DatePicker.prototype.setPosFromDates = function() {
 
     this.setHandlePos();
     this.setMiddlePos();
+    this.setVPSelPos();
 };
 DatePicker.prototype.setDatesFromPos = function() {
     this.state.lDate = this.els.cells.eq(this.state.lHandle).data('date');
@@ -386,6 +391,11 @@ DatePicker.prototype.setMiddlePos = function() {
         width: this.sizes.cell * (this.state.rHandle - this.state.lHandle),
         left: this.sizes.cell * this.state.lHandle + this.sizes.cell / 2
     });
+};
+DatePicker.prototype.setVPSelPos = function() {
+    var diff = this.state.rHandle - this.state.lHandle;
+    
+    this.els.vpsel.css({ width: this.sizes.monthq * diff, left: this.sizes.monthq * this.state.lHandle });
 };
 DatePicker.prototype.calSlide = function(pos) {
     var q = (this.sizes.calendar - this.sizes.wrap) / (this.sizes.wrap - this.sizes.viewport),
