@@ -350,7 +350,7 @@ DatePicker.prototype.controlsLogic = function() {
         var pos = e.pageX - (that.els.mArea.width() / 2) - that.sizes.offset - that.sizes.shift,
             x = pos,
             idiff = that.state.rHandle - that.state.lHandle,
-            i = Math.min(len - 1 - idiff, Math.max(this.sizes.minindex, Math.ceil(x / that.sizes.cell) - 1));
+            i = Math.min(len - 1 - idiff, Math.max(that.sizes.minindex, Math.ceil(x / that.sizes.cell) - 1));
             
         that.state.lHandle = i;
         that.state.rHandle = i + idiff;
