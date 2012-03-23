@@ -29,7 +29,7 @@ var DatePicker = function(container, options) {
             lHandle: '.dp-cal-left-handle',
             rHandle: '.dp-cal-right-handle'
         },
-        months: 12,
+        months: 11,
         defaultNights: 4
     }, options);
 
