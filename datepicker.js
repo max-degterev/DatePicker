@@ -138,7 +138,18 @@ DatePicker.prototype.mainLogic = function() {
     var resetOffset = function() {
         that.sizes.offset = that.els.calCrop.offset().left;
     };
+    
     $(window).on('resize', resetOffset);
+    
+    if (/*@cc_on!@*/false) { // check for Internet Explorer
+        var falsy = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        };
+
+        this.container.on('selectstart', falsy);
+    }
 };
 DatePicker.prototype.labelsLogic = function() {
     var that = this,
