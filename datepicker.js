@@ -56,16 +56,19 @@ DatePicker.prototype.init = function() {
     console.log('select: ' + ((+(new Date()) - this.profiler.start)));
 
     this.now = new Date();
-    this.start = new Date(this.now.getFullYear(), this.now.getMonth(), this.now.getDate());
-    this.end = new Date(this.now.getFullYear(), this.now.getMonth() + this.options.months, this.now.getDate());
-
-    this.generateLabels();
-    console.log('labels: ' + ((+(new Date()) - this.profiler.start)));
+    this.today = new Date(this.now.getFullYear(), this.now.getMonth(), this.now.getDate());
+    this.start = new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate());
+    this.end = new Date(this.start.getFullYear(), this.start.getMonth() + this.options.months, this.start.getDate());
 
     this.generateCalendar();
     console.log('calendar: ' + ((+(new Date()) - this.profiler.start)));
     
     this.getSizes();
+    
+    this.generateLabels();
+    console.log('labels: ' + ((+(new Date()) - this.profiler.start)));
+    
+    this.setSizes();
 
     this.logic();
 };
@@ -74,24 +77,32 @@ DatePicker.prototype.init = function() {
 // ==================================================================
 DatePicker.prototype.generateLabels = function() {
     var monthLabels = '<ul class="calendar-month-labels">',
-        curr = this.start.getMonth();
-    
+        curr = this.start.getMonth(),
+        year = this.start.getFullYear(),
+        len = 0,
+        
+        width = 0,
+        sum = 0;
+
     for (var i = 0; i <= this.options.months; i++) {
-        monthLabels += '<li>' + this.locale.month_labels[curr] + '<\/li>';
+        len = Calendar.getDaysNum(year, curr);
+        width = (this.sizes.monthq * len) | 0;
+        sum += width;
+        monthLabels += '<li style="width: ' + width + 'px;">' + this.locale.month_labels[curr] + '<\/li>';
         curr = (curr === 11) ? 0 : (curr + 1);
     }
 
     monthLabels += '<\/ul>';
     
     this.els.monthsLabels = $(monthLabels);
+    this.els.monthsLabels.css({ width: sum });
     this.els.monthsHolder.prepend(this.els.monthsLabels);
 };
 DatePicker.prototype.generateCalendar = function() {
     this.els.calendar = $(Calendar.generate({
         start: {
             year: this.start.getFullYear(),
-            month: this.start.getMonth() + 1,
-            day: this.start.getDate()
+            month: this.start.getMonth() + 1
         },
         end: {
             year: this.end.getFullYear(),
@@ -107,22 +118,30 @@ DatePicker.prototype.generateCalendar = function() {
     this.els.cells = this.els.calendar.children('.calendar-day');
 };
 DatePicker.prototype.getSizes = function() {
+    var mincell = this.els.cells.filter('[data-date="' + this.dateToYMD(this.today) + '"]');
+    
     this.sizes.cell = this.els.cells.eq(0).outerWidth();
     this.sizes.calendar = this.sizes.cell * this.els.cells.length;
 
     this.sizes.offset = this.els.calCrop.offset().left;
-    
+
     this.sizes.wrap = this.els.calCrop.outerWidth();
     this.sizes.shift = parseInt(this.els.calWrap.css('left'), 10);
     
-    this.sizes.monthLabel = (this.sizes.wrap / (this.options.months + 1)) | 0;
-    this.sizes.voffset = (this.sizes.monthLabel * (Calendar.getDaysNum(this.start.getFullYear(), this.start.getMonth()) - this.start.getDate()) / 30) | 0;
-    this.sizes.viewpos = this.sizes.voffset;
-    this.sizes.viewport = this.sizes.wrap * (this.sizes.wrap - this.sizes.voffset) / this.sizes.calendar;//or this.sizes.monthLabel;
+    this.sizes.minindex = this.today.getDate() - 1;
+    this.sizes.minindexpos = this.sizes.minindex * this.sizes.cell;
 
+    this.sizes.monthLabel = (this.sizes.wrap / (this.options.months + 1)) | 0;
+    this.sizes.viewpos = 0;
+    this.sizes.viewport = (this.sizes.wrap * this.sizes.wrap) / (this.sizes.wrap + this.sizes.calendar);
+
+    this.sizes.monthq = this.sizes.cell / (this.sizes.calendar / this.sizes.wrap);
+};
+DatePicker.prototype.setSizes = function() {
     this.els.calendar.css({ width: this.sizes.calendar });
-    this.els.viewport.css({ width: this.sizes.viewport, left: this.sizes.voffset });
-    this.els.monthsLabels.children('li').css({ width: this.sizes.monthLabel });
+    this.els.viewport.css({ width: this.sizes.viewport, left: 0 });
+
+    this.setCalPos(this.sizes.minindexpos);
 };
 // ==================================================================
 // LOGYK SECTION
@@ -190,6 +209,11 @@ DatePicker.prototype.calendarLogic = function() {
             ndateO = new Date(dateO.getFullYear(), dateO.getMonth(), dateO.getDate() + that.options.defaultNights),
             limO = new Date(that.end.getFullYear(), that.end.getMonth(), Calendar.getDaysNum(that.end.getFullYear(), that.end.getMonth())),
             ndate = that.dateToYMD(ndateO);
+
+        if (+dateO < +that.today) {
+            date = that.dateToYMD(that.today);
+            ndate = that.dateToYMD(new Date(that.today.getFullYear(), that.today.getMonth(), that.today.getDate() + that.options.defaultNights));
+        }
             
         if (+ndateO > +limO) {
             date = that.dateToYMD(new Date(limO.getFullYear(), limO.getMonth(), limO.getDate() - that.options.defaultNights));
@@ -249,7 +273,7 @@ DatePicker.prototype.controlsLogic = function() {
         var x = e.pageX - that.sizes.offset - that.sizes.shift;
         
         if (left) {
-            that.state.lHandle = Math.min(that.state.rHandle - 1, Math.max(0, Math.ceil(x / that.sizes.cell) - 1));        
+            that.state.lHandle = Math.min(that.state.rHandle - 1, Math.max(that.sizes.minindex, Math.ceil(x / that.sizes.cell) - 1));        
             checkLeftPos(e.pageX) && that.calSlideLeft();
         }
         else {
@@ -293,7 +317,7 @@ DatePicker.prototype.controlsLogic = function() {
         
         if (e.pageX - startP <= 0) {
             x = mLeft + diff;
-            i = Math.max(0, Math.ceil(x / that.sizes.cell) - 1);
+            i = Math.min(len - 1 + idiff, Math.max(that.sizes.minindex, Math.ceil(x / that.sizes.cell) - 1));
             that.state.lHandle = i;
             that.state.rHandle = i + idiff;
 
@@ -301,7 +325,7 @@ DatePicker.prototype.controlsLogic = function() {
         }
         else {
             x = mLeft + mWidth + diff;
-            i = Math.min(len - 1, Math.ceil(x / that.sizes.cell) - 1);
+            i = Math.min(len - 1, Math.max(that.sizes.minindex + idiff, Math.ceil(x / that.sizes.cell) - 1));
             that.state.lHandle = i - idiff;
             that.state.rHandle = i;
 
@@ -323,7 +347,7 @@ DatePicker.prototype.controlsLogic = function() {
         var pos = e.pageX - (that.els.mArea.width() / 2) - that.sizes.offset - that.sizes.shift,
             x = pos,
             idiff = that.state.rHandle - that.state.lHandle,
-            i = Math.min(len - 1 - idiff, Math.max(0, Math.ceil(x / that.sizes.cell) - 1));
+            i = Math.min(len - 1 - idiff, Math.max(this.sizes.minindex, Math.ceil(x / that.sizes.cell) - 1));
             
         that.state.lHandle = i;
         that.state.rHandle = i + idiff;
@@ -364,14 +388,24 @@ DatePicker.prototype.setMiddlePos = function() {
     });
 };
 DatePicker.prototype.calSlide = function(pos) {
-    var q = (this.sizes.calendar - this.sizes.wrap) / (this.sizes.wrap - this.sizes.viewport - this.sizes.voffset),
-        x = Math.min(this.sizes.wrap - this.sizes.viewport - this.sizes.voffset, Math.max(0, pos));
+    var q = (this.sizes.calendar - this.sizes.wrap) / (this.sizes.wrap - this.sizes.viewport),
+        x = Math.min(this.sizes.wrap - this.sizes.viewport, Math.max(0, pos));
 
     this.sizes.shift = -x * q;
     this.sizes.viewpos = x;
 
     this.els.calWrap.css({ left: this.sizes.shift });
-    this.els.viewport.css({ left: this.sizes.viewpos + this.sizes.voffset });
+    this.els.viewport.css({ left: this.sizes.viewpos });
+};
+DatePicker.prototype.setCalPos = function(pos) {
+    var q = (this.sizes.wrap - this.sizes.viewport) / (this.sizes.calendar - this.sizes.wrap),
+        x = Math.min(this.sizes.calendar - this.sizes.wrap, Math.max(0, pos));
+
+    this.sizes.shift = -x;
+    this.sizes.viewpos = x * q;
+
+    this.els.calWrap.css({ left: this.sizes.shift });
+    this.els.viewport.css({ left: this.sizes.viewpos });
 };
 DatePicker.prototype.calSlideLeft = function() {
     this.calSlide(this.sizes.viewpos - 1);
