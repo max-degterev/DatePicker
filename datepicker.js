@@ -76,6 +76,43 @@ DatePicker.prototype.init = function() {
 // ==================================================================
 // GENERATION SEKSHEN
 // ==================================================================
+DatePicker.prototype.generateCalendar = function() {
+    this.els.calendar = $(Calendar.generate({
+        start: {
+            year: this.start.getFullYear(),
+            month: this.start.getMonth() + 1
+        },
+        end: {
+            year: this.end.getFullYear(),
+            month: this.end.getMonth() + 1
+        },
+        daylabels: true,
+        monthlabels: true,
+        mlabels_firstday: true,
+        type: 'list'
+    }));
+
+    this.els.calHolder.html(this.els.calendar);
+    this.els.cells = this.els.calendar.children('.calendar-day');
+};
+DatePicker.prototype.getSizes = function() {    
+    this.sizes.cell = this.els.cells.eq(0).outerWidth();
+    this.sizes.calendar = this.sizes.cell * this.els.cells.length;
+
+    this.sizes.offset = this.els.calCrop.offset().left;
+
+    this.sizes.wrap = this.els.calCrop.outerWidth();
+    this.sizes.shift = parseInt(this.els.calWrap.css('left'), 10);
+    
+    this.sizes.minindex = this.today.getDate() - 1;
+    this.sizes.minindexpos = this.sizes.minindex * this.sizes.cell;
+
+    this.sizes.monthLabel = (this.sizes.wrap / (this.options.months + 1)) | 0;
+    this.sizes.viewpos = 0;
+    this.sizes.viewport = (this.sizes.wrap * this.sizes.wrap) / (this.sizes.wrap + this.sizes.calendar);
+
+    this.sizes.monthq = this.sizes.cell / (this.sizes.calendar / this.sizes.wrap);
+};
 DatePicker.prototype.generateLabels = function() {
     var monthLabels = '<ul class="calendar-month-labels">',
         curr = this.start.getMonth(),
@@ -98,45 +135,6 @@ DatePicker.prototype.generateLabels = function() {
     this.els.monthsLabels = $(monthLabels);
     this.els.monthsLabels.css({ width: sum });
     this.els.monthsHolder.prepend(this.els.monthsLabels);
-};
-DatePicker.prototype.generateCalendar = function() {
-    this.els.calendar = $(Calendar.generate({
-        start: {
-            year: this.start.getFullYear(),
-            month: this.start.getMonth() + 1
-        },
-        end: {
-            year: this.end.getFullYear(),
-            month: this.end.getMonth() + 1
-        },
-        daylabels: true,
-        monthlabels: true,
-        mlabels_firstday: true,
-        type: 'list'
-    }));
-
-    this.els.calHolder.html(this.els.calendar);
-    this.els.cells = this.els.calendar.children('.calendar-day');
-};
-DatePicker.prototype.getSizes = function() {
-    var mincell = this.els.cells.filter('[data-date="' + this.dateToYMD(this.today) + '"]');
-    
-    this.sizes.cell = this.els.cells.eq(0).outerWidth();
-    this.sizes.calendar = this.sizes.cell * this.els.cells.length;
-
-    this.sizes.offset = this.els.calCrop.offset().left;
-
-    this.sizes.wrap = this.els.calCrop.outerWidth();
-    this.sizes.shift = parseInt(this.els.calWrap.css('left'), 10);
-    
-    this.sizes.minindex = this.today.getDate() - 1;
-    this.sizes.minindexpos = this.sizes.minindex * this.sizes.cell;
-
-    this.sizes.monthLabel = (this.sizes.wrap / (this.options.months + 1)) | 0;
-    this.sizes.viewpos = 0;
-    this.sizes.viewport = (this.sizes.wrap * this.sizes.wrap) / (this.sizes.wrap + this.sizes.calendar);
-
-    this.sizes.monthq = this.sizes.cell / (this.sizes.calendar / this.sizes.wrap);
 };
 DatePicker.prototype.setSizes = function() {
     this.els.calendar.css({ width: this.sizes.calendar });
@@ -162,13 +160,13 @@ DatePicker.prototype.mainLogic = function() {
     $(window).on('resize', resetOffset);
     
     if (/*@cc_on!@*/false) { // check for Internet Explorer
-        var falsy = function(e) {
+        var preventSelect = function(e) {
             e.preventDefault();
             e.stopPropagation();
             return false;
         };
 
-        this.container.on('selectstart', falsy);
+        this.container.on('selectstart', preventSelect);
     }
 };
 DatePicker.prototype.labelsLogic = function() {
