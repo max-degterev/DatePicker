@@ -209,11 +209,11 @@ html {
                         cursor: -moz-grab;
                     }
                     .datepicker .dp-cal-middle-area:hover {
-                        -moz-opacity: .3;
-                             opacity: .3;
+                        -moz-opacity: .5;
+                             opacity: .5;
 
-                        -ms-filter: alpha(opacity=30);
-                            filter: alpha(opacity=30);
+                        -ms-filter: alpha(opacity=50);
+                            filter: alpha(opacity=50);
                     }
                     .datepicker .dp-cal-middle-area:active {
                         cursor: -moz-grabbing;
