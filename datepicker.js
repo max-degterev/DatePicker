@@ -226,10 +226,7 @@ DatePicker.prototype.calendarLogic = function() {
             ndate = that.dateToYMD(limO);
         }
 
-        that.state.lDate = date;
-        that.state.rDate = ndate;
-
-        that.setPosFromDates();
+        that.setPosFromDates(date, ndate);
         that.container.addClass('controls');
 
         that.els.calendar.off('click', '.calendar-day', handleCellsClick);
@@ -362,11 +359,14 @@ DatePicker.prototype.controlsLogic = function() {
 // ==================================================================
 // UTILITY SECTION
 // ==================================================================
-DatePicker.prototype.setPosFromDates = function() {
-    var lDate = this.els.cells.filter('[data-date="' + this.state.lDate + '"]'),
-        rDate = this.els.cells.filter('[data-date="' + this.state.rDate + '"]');
+DatePicker.prototype.setPosFromDates = function(lDate, rDate) {
+    var lCell = this.els.cells.filter('[data-date="' + lDate + '"]'),
+        rCell = this.els.cells.filter('[data-date="' + rDate + '"]');
+        
+    this.state.lDate = lDate;
+    this.state.rDate = rDate;
 
-    this.setHandlesPos(lDate.index(), rDate.index());
+    this.setHandlesPos(lCell.index(), rCell.index());
 };
 DatePicker.prototype.setDatesFromPos = function() {
     this.state.lDate = this.els.cells.eq(this.state.lHandle).data('date');
