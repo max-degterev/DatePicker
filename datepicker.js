@@ -1,3 +1,7 @@
+/**
+ * @require 'js/calendar.js'
+ */
+
 // ==================================================================
 // INIT SECTION
 // ==================================================================
@@ -36,7 +40,7 @@ var DatePicker = function(container, options) {
 
     this.profiler = {
         start: +(new Date())
-    }
+    };
 };
 DatePicker.prototype.locale = {
     month_labels: ['январь', 'февраль', 'март', 'апрель',
@@ -44,8 +48,6 @@ DatePicker.prototype.locale = {
                    'октябрь', 'ноябрь', 'декабрь']
 };
 DatePicker.prototype.init = function() {
-    console.log('init: ' + ((+(new Date()) - this.profiler.start)));
-
     this.state = {};
     this.els = {};
     this.sizes = {};
@@ -54,21 +56,14 @@ DatePicker.prototype.init = function() {
         this.els[prop] = this.container.find(this.options.selectors[prop]);
     }
     
-    console.log('select: ' + ((+(new Date()) - this.profiler.start)));
-
     this.now = new Date();
     this.today = new Date(this.now.getFullYear(), this.now.getMonth(), this.now.getDate());
     this.start = new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate());
     this.end = new Date(this.start.getFullYear(), this.start.getMonth() + this.options.months, this.start.getDate());
 
     this.generateCalendar();
-    console.log('calendar: ' + ((+(new Date()) - this.profiler.start)));
-    
-    this.getSizes();
-    
+    this.getSizes();    
     this.generateLabels();
-    console.log('labels: ' + ((+(new Date()) - this.profiler.start)));
-    
     this.setSizes();
 
     this.logic();
@@ -151,13 +146,26 @@ DatePicker.prototype.setSizes = function() {
 DatePicker.prototype.logic = function() {
     this.mainLogic();
     this.labelsLogic();
-    this.calendarLogic();
+    
     this.controlsLogic();
+    
+    if (this.options.lDate && this.options.rDate) {
+        this.calendarLoadState();
+    }
+    else {
+        this.calendarLogic();
+    }
 };
 DatePicker.prototype.mainLogic = function() {
     var that = this;
     var resetOffset = function() {
         that.sizes.offset = that.els.calCrop.offset().left;
+    };
+    
+    var handleMouseScroll = function(e, d) {
+        e.preventDefault();
+        
+        (d > 0) ? that.moveCalRight() : that.moveCalLeft();
     };
     
     $(window).on('resize', resetOffset);
@@ -171,6 +179,8 @@ DatePicker.prototype.mainLogic = function() {
 
         this.container.on('selectstart', preventSelect);
     }
+    
+    this.container.bind('mousewheel', handleMouseScroll);
 };
 DatePicker.prototype.labelsLogic = function() {
     var that = this,
@@ -210,29 +220,35 @@ DatePicker.prototype.calendarLogic = function() {
     var that = this;
     var handleCellsClick = function(e) {
         var el = $(this),
-            date = el.data('date'),
-            dateO = that.YMDToDate(date),
-            ndateO = new Date(dateO.getFullYear(), dateO.getMonth(), dateO.getDate() + that.options.defaultNights),
-            limO = new Date(that.end.getFullYear(), that.end.getMonth(), Calendar.getDaysNum(that.end.getFullYear(), that.end.getMonth())),
-            ndate = that.dateToYMD(ndateO);
-
-        if (+dateO < +that.today) {
-            date = that.dateToYMD(that.today);
-            ndate = that.dateToYMD(new Date(that.today.getFullYear(), that.today.getMonth(), that.today.getDate() + that.options.defaultNights));
-        }
-            
-        if (+ndateO > +limO) {
-            date = that.dateToYMD(new Date(limO.getFullYear(), limO.getMonth(), limO.getDate() - that.options.defaultNights));
-            ndate = that.dateToYMD(limO);
-        }
-
-        that.setPosFromDates(date, ndate);
+            dateO = that.YMDToDate(el.data('date')),
+            dates = that.sanitizeDates(
+                dateO, 
+                new Date(dateO.getFullYear(), dateO.getMonth(), dateO.getDate() + that.options.defaultNights)
+            );
+        
+        that.setPosFromDates(dates[0], dates[1]);
         that.container.addClass('controls');
 
         that.els.calendar.off('click', '.calendar-day', handleCellsClick);
+        
         $.pub('datepicker_dates_changed');
     };
     this.els.calendar.on('click', '.calendar-day', handleCellsClick);
+};
+DatePicker.prototype.calendarLoadState = function() {
+    var dates = this.sanitizeDates(this.YMDToDate(this.options.lDate), this.YMDToDate(this.options.rDate)),
+        lCell = this.els.cells.filter('[data-date="' + dates[0] + '"]');
+    
+    this.sizes.minindex = lCell.index();
+    this.sizes.minindexpos = this.sizes.minindex * this.sizes.cell;
+    
+    this.setPosFromDates(dates[0], dates[1]);
+    
+    this.setCalPos(this.sizes.minindexpos - (this.sizes.wrap / 2) + (this.state.rHandle - this.state.lHandle + 1) * (this.sizes.cell / 2));
+
+    this.container.addClass('controls');
+
+    $.pub('datepicker_dates_changed');
 };
 
 DatePicker.prototype.controlsLogic = function() {
@@ -359,6 +375,25 @@ DatePicker.prototype.controlsLogic = function() {
 // ==================================================================
 // UTILITY SECTION
 // ==================================================================
+DatePicker.prototype.sanitizeDates = function(lDateO, rDateO) {
+    var lim = new Date(this.end.getFullYear(), this.end.getMonth(), Calendar.getDaysNum(this.end.getFullYear(), this.end.getMonth())),
+        lDate, rDate;
+
+    if (+lDateO < +this.today) {
+        lDate = this.dateToYMD(this.today);
+        rDate = this.dateToYMD(new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate() + this.options.defaultNights));
+    }
+    else if (+rDateO > +lim) {
+        lDate = this.dateToYMD(new Date(lim.getFullYear(), lim.getMonth(), lim.getDate() - this.options.defaultNights));
+        rDate = this.dateToYMD(lim);
+    }
+    else {
+        lDate = this.dateToYMD(lDateO);
+        rDate = this.dateToYMD(rDateO);
+    }
+
+    return [lDate, rDate];
+};
 DatePicker.prototype.setPosFromDates = function(lDate, rDate) {
     var lCell = this.els.cells.filter('[data-date="' + lDate + '"]'),
         rCell = this.els.cells.filter('[data-date="' + rDate + '"]');

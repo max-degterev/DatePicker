@@ -25,22 +25,21 @@
                 </div>
             </div>
         </div>
-        <input type="hidden" id="dp-left-output" name="arrivalDate" value="">
-        <input type="hidden" id="dp-right-output" name="departureDate" value="">
     </div>
 
     <script src="jquery.js"></script>
     <script src="jquery.pubsub.min.js"></script>
+    <script src="jquery.mousewheel.js"></script>
     <script src="calendar.js"></script>
     <script src="datepicker.js"></script>
     <script>
-        var datepicker = new DatePicker('#datepicker'),
-            arrival = $('#dp-left-output'),
-            departure = $('#dp-right-output');
+        var datepicker = new DatePicker('#datepicker', {
+            lDate: '2012-10-17',
+            rDate: '2012-10-25'
+        });
 
         var handleDatesChange = function() {
-            arrival.val(datepicker.state.lDate);
-            departure.val(datepicker.state.rDate);
+            
         };
 
         $.sub('datepicker_dates_changed', handleDatesChange);
