@@ -38,13 +38,13 @@
             arrival = $('#dp-left-output'),
             departure = $('#dp-right-output');
 
-        datepicker.init();
-
         var handleDatesChange = function() {
             arrival.val(datepicker.state.lDate);
             departure.val(datepicker.state.rDate);
         };
 
         $.sub('datepicker_dates_changed', handleDatesChange);
+        
+        datepicker.init();
     </script>
 </body>
