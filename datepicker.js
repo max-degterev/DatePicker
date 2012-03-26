@@ -72,6 +72,8 @@ DatePicker.prototype.init = function() {
     this.setSizes();
 
     this.logic();
+    
+    $.pub('datepicker_ready');
 };
 // ==================================================================
 // GENERATION SEKSHEN
@@ -231,6 +233,7 @@ DatePicker.prototype.calendarLogic = function() {
         that.container.addClass('controls');
 
         that.els.calendar.off('click', '.calendar-day', handleCellsClick);
+        $.pub('datepicker_dates_changed');
     };
     this.els.calendar.on('click', '.calendar-day', handleCellsClick);
 };
@@ -368,6 +371,8 @@ DatePicker.prototype.setPosFromDates = function() {
 DatePicker.prototype.setDatesFromPos = function() {
     this.state.lDate = this.els.cells.eq(this.state.lHandle).data('date');
     this.state.rDate = this.els.cells.eq(this.state.rHandle).data('date');
+    
+    $.pub('datepicker_dates_changed');
 };
 DatePicker.prototype.setHandlesPos = function(l, r) {
     this.state.lHandle = l;
