@@ -371,17 +371,7 @@ DatePicker.prototype.controlsLogic = function() {
         that.setHandlesPos(i, i + idiff);
         that.setDatesFromPos();
         
-        if (idiff < that.sizes.capacity) {
-            lPos = i * that.sizes.cell;
-            rPos = (i + idiff + 1) * that.sizes.cell;
-
-            if (-that.sizes.shift > lPos) {
-                that.setCalPos(lPos);
-            }
-            if (-that.sizes.shift + that.sizes.wrap < rPos) {
-                that.setCalPos(rPos - that.sizes.wrap);
-            }
-        }
+        that.adjustCalPos(i, i + idiff);
     };
 
     this.els.calHandles.on('mousedown', handleDragStart);
@@ -413,12 +403,15 @@ DatePicker.prototype.sanitizeDates = function(lDateO, rDateO) {
 };
 DatePicker.prototype.setPosFromDates = function(lDate, rDate) {
     var lCell = this.els.cells.filter('[data-date="' + lDate + '"]'),
-        rCell = this.els.cells.filter('[data-date="' + rDate + '"]');
+        rCell = this.els.cells.filter('[data-date="' + rDate + '"]'),
+        lIndex = lCell.index(),
+        rIndex = rCell.index();
         
     this.state.lDate = lDate;
     this.state.rDate = rDate;
 
-    this.setHandlesPos(lCell.index(), rCell.index());
+    this.setHandlesPos(lIndex, rIndex);
+    this.adjustCalPos(lIndex, rIndex);
     
     $.pub('datepicker_dates_changed');
 };
@@ -459,6 +452,20 @@ DatePicker.prototype.setVPPos = function(pos) {
 
     this.els.calWrap.css({ left: this.sizes.shift });
     this.els.viewport.css({ left: this.sizes.viewpos });
+};
+DatePicker.prototype.adjustCalPos = function(lDate, rDate) {
+    var idiff = rDate - lDate;
+    if (idiff < this.sizes.capacity) {
+        var lPos = lDate * this.sizes.cell;
+        var rPos = (rDate + 1) * this.sizes.cell;
+
+        if (-this.sizes.shift > lPos) {
+            this.setCalPos(lPos);
+        }
+        if (-this.sizes.shift + this.sizes.wrap < rPos) {
+            this.setCalPos(rPos - this.sizes.wrap);
+        }
+    }
 };
 DatePicker.prototype.setCalPos = function(pos) {
     var x = Math.min(this.sizes.calendar - this.sizes.wrap, Math.max(0, pos));
