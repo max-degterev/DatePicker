@@ -6,7 +6,10 @@ Calendar = function() {
    		cal_short_months_labels = ['янв.', 'фев.', 'мар.', 'апр.',
    		                   'май', 'июн.', 'июл.', 'авг.', 'сен.',
    		                   'окт.', 'ноя.', 'дек.'],
-		now = new Date();
+		now = new Date(),
+        today = new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+		now_time = +now,
+        today_time = +today;
 
 	return {
 		generateTable: function(start, s) {
@@ -14,8 +17,7 @@ Calendar = function() {
 				year = start.getFullYear(),
 				starting_day = start.getDay() ? (start.getDay() - 1) : 6, // Hacking this to make Monday the first day
 				month_length = this.getDaysNum(year, month),
-				month_name = cal_months_labels[month],
-				now_time = +now;
+				month_name = cal_months_labels[month];
 
 			var html = '<table class="calendar-table'
 			    + (s.classes ? (' ' + s.classes) : '')
@@ -51,7 +53,8 @@ Calendar = function() {
 					var valid = (day <= month_length && (i > 0 || j >= starting_day));
 
 					html += '<td class="calendar-day'
-					+ ((now_time > date_time) ? ' past' : '') + '"'
+                    + ((today_time === date_time) ? ' today' : '')
+					+ ((today_time > date_time) ? ' past' : '') + '"'
 
 					+ (valid ? ('data-date="'
 					+ year
@@ -87,8 +90,7 @@ Calendar = function() {
 		generateList: function(start, s) {
 			var month = start.getMonth(),
 				year = start.getFullYear(),
-				month_length = this.getDaysNum(year, month),
-				now_time = +now;
+				month_length = this.getDaysNum(year, month);
 
 			var html = '';
 
@@ -107,7 +109,8 @@ Calendar = function() {
                 + ((s.monthlabels && s.mlabels_firstday && (day === 1)) ? ' monthlabel' : '')
 				+ ((date_day === 1) ? ' monday' : '')
 				+ ((date_day === 0 || date_day === 6) ? ' weekend' : '')
-				+ ((now_time > date_time) ? ' past' : '') + '"'
+                + ((today_time === date_time) ? ' today' : '')
+				+ ((today_time > date_time) ? ' past' : '') + '"'
 				
 				+ ((day === 1) ? (' data-started="'
 				+ year

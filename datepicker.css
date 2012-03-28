@@ -8,7 +8,7 @@ html {
 
 .datepicker {
     width: 730px;
-    margin: 60px auto;
+    margin: 0 auto;
     
 	-webkit-user-select: none;
 	   -moz-user-select: none;
@@ -29,7 +29,7 @@ html {
         .dp-months-holder .calendar-month-labels {
             overflow: hidden;
             font-size: 9px;
-            line-height: 9px;
+            line-height: 12px;
             color: #7f7f7f;
             text-transform: uppercase;
             text-align: center;
@@ -46,7 +46,7 @@ html {
             width: 10px;
             height: 80%;
             
-            margin-top: 2px;
+            margin-top: 3px;
             
             display: none;
             
@@ -136,6 +136,13 @@ html {
                 .datepicker .calendar-day.monthlabel {
                     position: relative;
                     border-left: 1px solid #bbb;
+                }
+                .datepicker .calendar-day.past {
+                    -moz-opacity: .1;
+                         opacity: .1;
+
+                    -ms-filter: alpha(opacity=10);
+                        filter: alpha(opacity=10);
                 }
                     .datepicker .calendar-day > span {
                         display: block;

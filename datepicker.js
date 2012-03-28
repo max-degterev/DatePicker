@@ -35,12 +35,11 @@ var DatePicker = function(container, options) {
             rHandle: '.dp-cal-right-handle'
         },
         months: 11,
-        defaultNights: 4
+        defaultNights: 4,
+        maxNights: 10
     }, options);
 
-    this.profiler = {
-        start: +(new Date())
-    };
+    this.ready = false;
 };
 DatePicker.prototype.locale = {
     month_labels: ['январь', 'февраль', 'март', 'апрель',
@@ -67,6 +66,8 @@ DatePicker.prototype.init = function() {
     this.setSizes();
 
     this.logic();
+    
+    this.ready = true;
     
     $.pub('datepicker_ready');
 };
@@ -230,25 +231,18 @@ DatePicker.prototype.calendarLogic = function() {
         that.container.addClass('controls');
 
         that.els.calendar.off('click', '.calendar-day', handleCellsClick);
-        
-        $.pub('datepicker_dates_changed');
     };
     this.els.calendar.on('click', '.calendar-day', handleCellsClick);
 };
 DatePicker.prototype.calendarLoadState = function() {
     var dates = this.sanitizeDates(this.YMDToDate(this.options.lDate), this.YMDToDate(this.options.rDate)),
         lCell = this.els.cells.filter('[data-date="' + dates[0] + '"]');
-    
-    this.sizes.minindex = lCell.index();
-    this.sizes.minindexpos = this.sizes.minindex * this.sizes.cell;
-    
+
     this.setPosFromDates(dates[0], dates[1]);
     
-    this.setCalPos(this.sizes.minindexpos - (this.sizes.wrap / 2) + (this.state.rHandle - this.state.lHandle + 1) * (this.sizes.cell / 2));
+    this.setCalPos(lCell.index() * this.sizes.cell - (this.sizes.wrap / 2) + (this.state.rHandle - this.state.lHandle + 1) * (this.sizes.cell / 2));
 
     this.container.addClass('controls');
-
-    $.pub('datepicker_dates_changed');
 };
 
 DatePicker.prototype.controlsLogic = function() {
@@ -365,6 +359,7 @@ DatePicker.prototype.controlsLogic = function() {
             i = Math.min(len - 1 - idiff, Math.max(that.sizes.minindex, Math.ceil(x / that.sizes.cell) - 1));
 
         that.setHandlesPos(i, i + idiff);
+        that.setDatesFromPos();
     };
 
     this.els.calHandles.on('mousedown', handleDragStart);
@@ -402,6 +397,8 @@ DatePicker.prototype.setPosFromDates = function(lDate, rDate) {
     this.state.rDate = rDate;
 
     this.setHandlesPos(lCell.index(), rCell.index());
+    
+    $.pub('datepicker_dates_changed');
 };
 DatePicker.prototype.setDatesFromPos = function() {
     this.state.lDate = this.els.cells.eq(this.state.lHandle).data('date');
@@ -418,6 +415,8 @@ DatePicker.prototype.setHandlesPos = function(l, r) {
     
     this.setMiddlePos();
     this.setVPSelPos();
+    
+    $.pub('datepicker_dates_moved');
 };
 DatePicker.prototype.setMiddlePos = function() {
     this.els.mArea.css({
