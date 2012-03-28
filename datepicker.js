@@ -36,7 +36,7 @@ var DatePicker = function(container, options) {
         },
         months: 11,
         defaultNights: 4,
-        maxNights: 10
+        maxNights: Infinity
     }, options);
     
     this.options.defaultNights = Math.min(this.options.defaultNights, this.options.maxNights);
@@ -295,17 +295,16 @@ DatePicker.prototype.controlsLogic = function() {
         if (left) {
             var pos = Math.min(that.state.rHandle - 1, Math.max(that.sizes.minindex, Math.ceil(compOffset(e.pageX) / that.sizes.cell) - 1));
             pos = Math.max(pos, that.state.rHandle - that.options.maxNights);
-            
-            checkLeftPos(e.pageX) && that.shiftVPPosLeft();
             that.setHandlesPos(pos, that.state.rHandle);
         }
         else {
             var pos = Math.min(len - 1, Math.max(that.state.lHandle + 1, Math.ceil(compOffset(e.pageX) / that.sizes.cell) - 1));
             pos = Math.min(pos, that.state.lHandle + that.options.maxNights);
-            
-            checkRightPos(e.pageX) && that.shiftVPPosRight();
             that.setHandlesPos(that.state.lHandle, pos);
         }
+        
+        checkLeftPos(e.pageX) && that.shiftVPPosLeft();
+        checkRightPos(e.pageX) && that.shiftVPPosRight();
     };
     var handleDragEnd = function(e) {
         doc.off('mousemove.datepicker', handleDragMove);
