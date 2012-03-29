@@ -17,7 +17,7 @@
                         <b class="dp-translucency"></b>
                         <i class="dp-cal-left-handle dp-cal-handle"></i>
                     </span>
-                    <span class="dp-cal-middle-area"></span>
+                    <span class="dp-cal-middle-area"><span class="dp-cal-middle-area-textwrap"><i class="js_nights dp-cal-middle-area-text"></i></span></span>
                     <span class="dp-cal-right-area dp-cal-cover">
                         <b class="dp-translucency"></b>
                         <i class="dp-cal-right-handle dp-cal-handle"></i>
@@ -33,16 +33,20 @@
     <script src="calendar.js"></script>
     <script src="datepicker.js"></script>
     <script>
+        var textNode = $('.dp-cal-middle-area-text');
         var datepicker = new DatePicker('#datepicker', {
             // lDate: '2012-10-17',
             // rDate: '2012-10-25'
         });
 
-        var handleDatesChange = function() {
-            
+        var handleDatesMove = function() {
+            var diff = datepicker.state.rHandle - datepicker.state.lHandle,
+                text = diff > 1 ? diff + ' ночей' : '';
+                
+            textNode.html(text);
         };
 
-        $.sub('datepicker_dates_changed', handleDatesChange);
+        $.sub('datepicker_dates_moved', handleDatesMove);
         
         datepicker.init();
     </script>
