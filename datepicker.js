@@ -57,6 +57,10 @@ DatePicker.prototype.init = function() {
         this.els[prop] = this.container.find(this.options.selectors[prop]);
     }
     
+    if (/*@cc_on!@*/false) { // check for Internet Explorer
+        this.container.addClass('ie');
+    }
+    
     this.now = new Date();
     this.today = new Date(this.now.getFullYear(), this.now.getMonth(), this.now.getDate());
     this.start = new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate());
