@@ -1,4 +1,4 @@
-Calendar = function() {
+;Calendar = function() {
 	var cal_days_labels = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'],
 		cal_months_labels = ['январь', 'февраль', 'март', 'апрель',
 		                   'май', 'июнь', 'июль', 'август', 'сентябрь',
@@ -9,7 +9,8 @@ Calendar = function() {
 		now = new Date(),
         today = new Date(now.getFullYear(), now.getMonth(), now.getDate()),
 		now_time = +now,
-        today_time = +today;
+        today_time = +today,
+        one_day = 86400000; // 1000*60*60*24
 
 	return {
 		generateTable: function(start, s) {
@@ -74,7 +75,7 @@ Calendar = function() {
 					}
 					html += '<\/span><\/td>';
 					
-					date_time += 86400000;
+					date_time += one_day;
 				}
 				// stop making rows if we've run out of days
 				if (day > month_length) {
@@ -132,7 +133,7 @@ Calendar = function() {
                 + ((s.monthlabels && s.mlabels_firstday && (day === 1)) ? '<strong>' + cal_months_labels[month] + '<\/strong>' : '')
 				+ '<\/li>';
 
-				date_time += 86400000; // 1000*60*60*24
+				date_time += one_day;
 
 				date_day++;
 				(date_day > 6) && (date_day = 0);
@@ -157,7 +158,7 @@ Calendar = function() {
     		    + (s.classes ? (' ' + s.classes) : '')
     		    + '">';
     		    
-                if (s.nogaps) {
+                if (!s.nogaps) {
                     fill_cells = (t.getDay() ? t.getDay() : 7)  - 1;
         		    for(i = 0; i < fill_cells; i++ ){
                         html += '<li class="empty"><\/li>';
@@ -177,8 +178,8 @@ Calendar = function() {
             } while (+t !== +e)
 
             if (s.type === 'list') {
-                if (s.nogaps) {
-                    fill_cells = 7 - (new Date(e - 86400000)).getDay();
+                if (!s.nogaps) {
+                    fill_cells = 7 - (new Date(e - one_day)).getDay();
                     if (fill_cells < 7) {
                         for(i = 0; i < fill_cells; i++ ){
                             html += '<li class="empty"><\/li>';
