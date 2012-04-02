@@ -94,7 +94,8 @@ DatePicker.prototype.generateCalendar = function() {
         daylabels: true,
         monthlabels: true,
         mlabels_firstday: true,
-        type: 'list'
+        type: 'list',
+        nogaps: true
     }));
 
     this.els.calHolder.html(this.els.calendar);
