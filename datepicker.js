@@ -176,7 +176,7 @@ DatePicker.prototype.mainLogic = function() {
     var handleMouseScroll = function(e, d) {
         e.preventDefault();
         
-        (d > 0) ? that.shiftVPPosRight() : that.shiftVPPosLeft();
+        (d < 0) ? that.shiftVPPosRight() : that.shiftVPPosLeft();
     };
     
     $(window).on('resize', resetOffset);
