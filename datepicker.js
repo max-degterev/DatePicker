@@ -57,9 +57,15 @@ DatePicker.prototype.init = function() {
         this.els[prop] = this.container.find(this.options.selectors[prop]);
     }
     
-    if (/*@cc_on!@*/false) { // check for Internet Explorer
+    if (/*@cc_on!@*/false) {
+        this.lamebrowser = true;
         this.container.addClass('ie');
     }
+    else {
+        this.lamebrowser = false;
+    }
+    
+    this.isTouch = !(typeof window.ontouchstart === 'undefined');
     
     this.now = new Date();
     this.today = new Date(this.now.getFullYear(), this.now.getMonth(), this.now.getDate());
@@ -181,7 +187,7 @@ DatePicker.prototype.mainLogic = function() {
     
     $(window).on('resize', resetOffset);
     
-    if (/*@cc_on!@*/false) { // check for Internet Explorer
+    if (this.lamebrowser) { // check for Internet Explorer
         var preventSelect = function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -212,8 +218,18 @@ DatePicker.prototype.labelsLogic = function() {
             return;
         }
         renderT = now;
+        
+        e.preventDefault();
+        e.stopPropagation();
 
-        that.setVPPos(compOffset(e.pageX));
+        if (that.isTouch) {
+            if (e.originalEvent.targetTouches && e.originalEvent.targetTouches.length) {
+                that.setVPPos(compOffset(e.originalEvent.targetTouches[0].pageX));
+            }
+        }
+        else {
+            that.setVPPos(compOffset(e.pageX));
+        }
     };
     var vpDragEnd = function(e) {
         doc.off('mousemove.datepicker', vpDragMove);
@@ -225,6 +241,9 @@ DatePicker.prototype.labelsLogic = function() {
     };
 
     this.els.viewport.on('mousedown', vpDragStart);
+    this.els.viewport.on('touchmove', vpDragMove);
+    this.els.viewport.on('touchend', vpDragMove);
+    
     this.els.monthsHolder.on('click', vpMoveByClick);
 };
 DatePicker.prototype.calendarLogic = function() {
@@ -280,15 +299,56 @@ DatePicker.prototype.controlsLogic = function() {
     var compOffset = function(x) {
         return x - that.sizes.offset - that.sizes.shift;
     };
+    
+    var moveHandlesToPos = function(pageX) {
+        if (left) {
+            var pos = Math.min(that.state.rHandle - 1, Math.max(that.sizes.minindex, Math.ceil(compOffset(pageX) / that.sizes.cell) - 1));
+            pos = Math.max(pos, that.state.rHandle - that.options.maxNights);
+            that.setHandlesPos(pos, that.state.rHandle);
+        }
+        else {
+            var pos = Math.min(len - 1, Math.max(that.state.lHandle + 1, Math.ceil(compOffset(pageX) / that.sizes.cell) - 1));
+            pos = Math.min(pos, that.state.lHandle + that.options.maxNights);
+            that.setHandlesPos(that.state.lHandle, pos);
+        }
+        
+        checkLeftPos(pageX) && that.shiftVPPosLeft();
+        checkRightPos(pageX) && that.shiftVPPosRight();
+    };
+    var moveAreaToPos = function(pageX) {
+        var diff = compOffset(pageX) - startP,
+            idiff = that.state.rHandle - that.state.lHandle,
+            x, i;
+        
+        if (pageX - startP <= 0) {
+            x = mLeft + diff;
+            i = Math.min(len - 1 + idiff, Math.max(that.sizes.minindex, Math.ceil(x / that.sizes.cell) - 1));
+            that.setHandlesPos(i, i + idiff);
+
+            checkLeftPos(pageX - mWidth) && that.shiftVPPosLeft();   
+        }
+        else {
+            x = mLeft + mWidth + diff;
+            i = Math.min(len - 1, Math.max(that.sizes.minindex + idiff, Math.ceil(x / that.sizes.cell) - 1));
+            that.setHandlesPos(i - idiff, i);
+
+            checkRightPos(pageX + mWidth) && that.shiftVPPosRight();
+        }
+    }
 
     var handleDragStart = function(e) {
         var el = $(this);
+        
+        e.preventDefault();
+        e.stopPropagation();
         
         left = el.hasClass('dp-cal-left-handle');
         that.els.calWrap.addClass('dragging');
 
         doc.on('mousemove.datepicker', handleDragMove);
         doc.on('mouseup.datepicker', handleDragEnd);
+        that.els.calHandles.on('touchmove.datepicker', handleDragMove);
+        that.els.calHandles.on('touchend.datepicker', handleDragMove);
     };
     var handleDragMove = function(e) {
         var now = +(new Date());
@@ -297,23 +357,25 @@ DatePicker.prototype.controlsLogic = function() {
         }
         renderT = now;
         
-        if (left) {
-            var pos = Math.min(that.state.rHandle - 1, Math.max(that.sizes.minindex, Math.ceil(compOffset(e.pageX) / that.sizes.cell) - 1));
-            pos = Math.max(pos, that.state.rHandle - that.options.maxNights);
-            that.setHandlesPos(pos, that.state.rHandle);
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (that.isTouch) {
+            if (e.originalEvent.targetTouches && e.originalEvent.targetTouches.length) {
+                moveHandlesToPos(e.originalEvent.targetTouches[0].pageX);
+            }
+            
+            (e.type === 'touchend') && handleDragEnd(e);
         }
         else {
-            var pos = Math.min(len - 1, Math.max(that.state.lHandle + 1, Math.ceil(compOffset(e.pageX) / that.sizes.cell) - 1));
-            pos = Math.min(pos, that.state.lHandle + that.options.maxNights);
-            that.setHandlesPos(that.state.lHandle, pos);
+            moveHandlesToPos(e.pageX);
         }
-        
-        checkLeftPos(e.pageX) && that.shiftVPPosLeft();
-        checkRightPos(e.pageX) && that.shiftVPPosRight();
     };
     var handleDragEnd = function(e) {
         doc.off('mousemove.datepicker', handleDragMove);
         doc.off('mouseup.datepicker', handleDragEnd);
+        that.els.calHandles.off('touchmove.datepicker', handleDragMove);
+        that.els.calHandles.off('touchend.datepicker', handleDragMove);
 
         that.setDatesFromPos();
 
@@ -321,6 +383,7 @@ DatePicker.prototype.controlsLogic = function() {
     };
     
     var areaDragStart = function(e) {
+        e.preventDefault();
         e.stopPropagation();
         
         mWidth = that.els.mArea.width();
@@ -329,6 +392,8 @@ DatePicker.prototype.controlsLogic = function() {
 
         doc.on('mousemove.datepicker', areaDragMove);
         doc.on('mouseup.datepicker', areaDragEnd);
+        that.els.mArea.on('touchmove.datepicker', areaDragMove);
+        that.els.mArea.on('touchend.datepicker', areaDragMove);
     };
     var areaDragMove = function(e) {
         var now = +(new Date());
@@ -336,24 +401,19 @@ DatePicker.prototype.controlsLogic = function() {
             return;
         }
         renderT = now;
-
-        var diff = compOffset(e.pageX) - startP,
-            idiff = that.state.rHandle - that.state.lHandle,
-            x, i;
         
-        if (e.pageX - startP <= 0) {
-            x = mLeft + diff;
-            i = Math.min(len - 1 + idiff, Math.max(that.sizes.minindex, Math.ceil(x / that.sizes.cell) - 1));
-            that.setHandlesPos(i, i + idiff);
+        e.preventDefault();
+        e.stopPropagation();
 
-            checkLeftPos(e.pageX - mWidth) && that.shiftVPPosLeft();   
+        if (that.isTouch) {
+            if (e.originalEvent.targetTouches && e.originalEvent.targetTouches.length) {
+                moveAreaToPos(e.originalEvent.targetTouches[0].pageX);
+            }
+            
+            (e.type === 'touchend') && areaDragEnd(e);
         }
         else {
-            x = mLeft + mWidth + diff;
-            i = Math.min(len - 1, Math.max(that.sizes.minindex + idiff, Math.ceil(x / that.sizes.cell) - 1));
-            that.setHandlesPos(i - idiff, i);
-
-            checkRightPos(e.pageX + mWidth) && that.shiftVPPosRight();
+            moveAreaToPos(e.pageX);
         }
         
         // FIXME: shift controls holder instead of moving the handles. Though in introduces even another shifting layer
@@ -361,6 +421,8 @@ DatePicker.prototype.controlsLogic = function() {
     var areaDragEnd = function(e) {
         doc.off('mousemove.datepicker', areaDragMove);
         doc.off('mouseup.datepicker', areaDragEnd);
+        that.els.mArea.off('touchmove.datepicker', areaDragMove);
+        that.els.mArea.off('touchend.datepicker', areaDragMove);
         
         that.setDatesFromPos();
     };
@@ -379,7 +441,9 @@ DatePicker.prototype.controlsLogic = function() {
     };
 
     this.els.calHandles.on('mousedown', handleDragStart);
+    this.els.calHandles.on('touchstart', handleDragStart);
     this.els.mArea.on('mousedown', areaDragStart);
+    this.els.mArea.on('touchstart', areaDragStart);
     
     this.els.trans.on('click', areaMoveByClick);
 };
