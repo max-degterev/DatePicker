@@ -259,6 +259,9 @@ body {
                                 filter: alpha(opacity=20);
                             background: #505f6c;
                         }
+                        .ie9 .datepicker .dp-translucency {
+                            opacity: 1;
+                        }
                         .datepicker.ie .dp-translucency {
                             background: url('img/datepicker/ie_trans.png');
                         }
