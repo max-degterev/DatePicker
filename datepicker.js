@@ -197,7 +197,7 @@ DatePicker.prototype.mainLogic = function() {
         this.container.on('selectstart', preventSelect);
     }
     
-    this.container.bind('mousewheel', handleMouseScroll);
+    this.container.on('mousewheel', handleMouseScroll);
 };
 DatePicker.prototype.labelsLogic = function() {
     var that = this,
