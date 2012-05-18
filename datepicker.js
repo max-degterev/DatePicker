@@ -347,8 +347,6 @@ DatePicker.prototype.controlsLogic = function() {
 
         doc.on('mousemove.datepicker', handleDragMove);
         doc.on('mouseup.datepicker', handleDragEnd);
-        that.els.calHandles.on('touchmove.datepicker', handleDragMove);
-        that.els.calHandles.on('touchend.datepicker', handleDragMove);
     };
     var handleDragMove = function(e) {
         var now = +(new Date());
@@ -361,8 +359,8 @@ DatePicker.prototype.controlsLogic = function() {
         e.stopPropagation();
         
         if (that.isTouch) {
-            if (e.originalEvent.targetTouches && e.originalEvent.targetTouches.length) {
-                moveHandlesToPos(e.originalEvent.targetTouches[0].pageX);
+            if (e.originalEvent.touches && e.originalEvent.touches.length) {
+                moveHandlesToPos(e.originalEvent.touches[0].pageX);
             }
             
             (e.type === 'touchend') && handleDragEnd(e);
@@ -374,8 +372,6 @@ DatePicker.prototype.controlsLogic = function() {
     var handleDragEnd = function(e) {
         doc.off('mousemove.datepicker', handleDragMove);
         doc.off('mouseup.datepicker', handleDragEnd);
-        that.els.calHandles.off('touchmove.datepicker', handleDragMove);
-        that.els.calHandles.off('touchend.datepicker', handleDragMove);
 
         that.setDatesFromPos();
 
@@ -388,12 +384,21 @@ DatePicker.prototype.controlsLogic = function() {
         
         mWidth = that.els.mArea.width();
         mLeft = that.els.mArea.offset().left;
-        startP = e.pageX;
+
+        if (that.isTouch) {
+            if (e.originalEvent.touches && e.originalEvent.touches.length) {
+                startP = e.originalEvent.touches[0].pageX;
+            }
+            else {
+                startP = null;
+            }
+        }
+        else {
+            startP = e.pageX;
+        }
 
         doc.on('mousemove.datepicker', areaDragMove);
         doc.on('mouseup.datepicker', areaDragEnd);
-        that.els.mArea.on('touchmove.datepicker', areaDragMove);
-        that.els.mArea.on('touchend.datepicker', areaDragMove);
     };
     var areaDragMove = function(e) {
         var now = +(new Date());
@@ -406,8 +411,12 @@ DatePicker.prototype.controlsLogic = function() {
         e.stopPropagation();
 
         if (that.isTouch) {
-            if (e.originalEvent.targetTouches && e.originalEvent.targetTouches.length) {
-                moveAreaToPos(e.originalEvent.targetTouches[0].pageX);
+            if (e.originalEvent.touches && e.originalEvent.touches.length) {
+                if (startP === null) {
+                    startP = e.originalEvent.touches[0].pageX;
+                }
+
+                moveAreaToPos(e.originalEvent.touches[0].pageX);
             }
             
             (e.type === 'touchend') && areaDragEnd(e);
@@ -421,8 +430,6 @@ DatePicker.prototype.controlsLogic = function() {
     var areaDragEnd = function(e) {
         doc.off('mousemove.datepicker', areaDragMove);
         doc.off('mouseup.datepicker', areaDragEnd);
-        that.els.mArea.off('touchmove.datepicker', areaDragMove);
-        that.els.mArea.off('touchend.datepicker', areaDragMove);
         
         that.setDatesFromPos();
     };
@@ -442,8 +449,13 @@ DatePicker.prototype.controlsLogic = function() {
 
     this.els.calHandles.on('mousedown', handleDragStart);
     this.els.calHandles.on('touchstart', handleDragStart);
+    this.els.calHandles.on('touchmove', handleDragMove);
+    this.els.calHandles.on('touchend', handleDragMove);
+
     this.els.mArea.on('mousedown', areaDragStart);
     this.els.mArea.on('touchstart', areaDragStart);
+    this.els.mArea.on('touchmove', areaDragMove);
+    this.els.mArea.on('touchend', areaDragMove);
     
     this.els.trans.on('click', areaMoveByClick);
 };
